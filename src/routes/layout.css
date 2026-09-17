@@ -692,3 +692,106 @@ details[open] > summary .chevron {
 	clip-path: inset(50%);
 	white-space: nowrap;
 }
+
+/* ─── Landing chrome ───────────────────────────────────────────────────────
+   main is full-width so a section can own the whole viewport; every section
+   puts its text back on the grid with .wrap. */
+@utility wrap {
+	width: 100%;
+	max-width: 1080px;
+	margin-inline: auto;
+	padding-inline: 20px;
+}
+
+/* Burgundy ground. Rather than a parallel set of on-brand classes, the palette
+   is redefined for the subtree, so .lead, .mono, .card and the rest keep working
+   inside it. White on #7A1F3D is 10.04:1, on the dark fill #8C1D3F it is 8.89:1. */
+@utility band {
+	background:
+		radial-gradient(
+			120% 90% at 85% 0%,
+			color-mix(in oklab, #ffffff 12%, transparent),
+			transparent 60%
+		),
+		linear-gradient(
+			160deg,
+			var(--color-brand),
+			color-mix(in oklab, var(--color-brand) 74%, #2b0713)
+		);
+	color: #ffffff;
+	--color-ink: #ffffff;
+	--color-dim: color-mix(in oklab, #ffffff 80%, transparent);
+	--color-faint: color-mix(in oklab, #ffffff 66%, transparent);
+	--color-muted: color-mix(in oklab, #ffffff 30%, transparent);
+	--color-sunk: color-mix(in oklab, #ffffff 12%, transparent);
+	--color-accent: #ffffff;
+	--color-solid: #ffffff;
+	--color-on-solid: var(--color-brand);
+	--color-card: color-mix(in oklab, #ffffff 9%, transparent);
+}
+
+/* Khatam: the eight-point star as two overlapping squares, the oldest structural
+   motif in Islamic tiling. Drawn as a mask so one utility takes any colour. */
+@utility khatam {
+	--khatam: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' fill='none' stroke='%23000' stroke-width='1'%3E%3Cpath d='M7 7h22v22H7z'/%3E%3Cpath d='M18 3 33 18 18 33 3 18Z'/%3E%3C/svg%3E");
+	-webkit-mask-image: var(--khatam);
+	mask-image: var(--khatam);
+	-webkit-mask-size: 72px 72px;
+	mask-size: 72px 72px;
+	background-color: currentColor;
+}
+
+/* A surface that sits above the page rather than beside it. The feed mock is the
+   only thing on this page allowed real depth. */
+@utility lift {
+	@apply card;
+	border-color: color-mix(in oklab, var(--color-muted) 55%, transparent);
+	box-shadow:
+		0 1px 2px color-mix(in oklab, #000000 5%, transparent),
+		0 18px 40px -18px color-mix(in oklab, #000000 28%, transparent);
+	transition:
+		transform 180ms cubic-bezier(0.2, 0.7, 0.3, 1),
+		box-shadow 180ms ease;
+	&:hover {
+		transform: translateY(-3px);
+		box-shadow:
+			0 1px 2px color-mix(in oklab, #000000 6%, transparent),
+			0 26px 54px -20px color-mix(in oklab, #000000 34%, transparent);
+	}
+}
+
+@utility act {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	color: var(--color-faint);
+	font-size: 12px;
+	font-weight: 600;
+	transition: color 120ms ease;
+	&:hover {
+		color: var(--color-accent);
+	}
+}
+
+/* Stands in for a photograph behind the blur. Soft blobs rather than a flat
+   panel, so the veil reads as something hidden and not as an empty box. */
+@utility veil-mock {
+	background:
+		radial-gradient(
+			38% 52% at 26% 34%,
+			color-mix(in oklab, var(--color-brand) 55%, transparent),
+			transparent 70%
+		),
+		radial-gradient(
+			42% 48% at 74% 30%,
+			color-mix(in oklab, var(--color-faint) 60%, transparent),
+			transparent 72%
+		),
+		radial-gradient(
+			60% 55% at 52% 92%,
+			color-mix(in oklab, var(--color-brand) 30%, transparent),
+			transparent 70%
+		),
+		linear-gradient(120deg, var(--color-sunk), var(--color-muted), var(--color-sunk));
+	filter: blur(2px);
+}

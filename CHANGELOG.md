@@ -15,6 +15,10 @@ Every user-facing change, newest first. Dates are the day the change landed.
 
 ### Changed
 
+- The landing page and the privacy page were rebuilt so they stop reading like
+  documentation: a burgundy band carries the content policy, the blur is something
+  you tap rather than a paragraph about tapping, and the feed beside the pitch looks
+  like a surface rather than three boxes.
 - The landing page shows the product rather than describing it: a feed beside the
   pitch, a blurred photo you can see the shape of, and a post removed for gheebah
   with the reason attached. The number waiting is the real one.

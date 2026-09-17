@@ -36,21 +36,26 @@
 	<meta name="twitter:description" content={description} />
 </svelte:head>
 
-<article class="grid justify-items-start gap-6 pt-12 pb-10 md:pt-20 md:pb-16">
-	<span class="label">Updated {updated}</span>
-	<h1 class="big">Privacy</h1>
-	<p class="lead measure">
-		A record of who prays, and where, is the kind of thing that gets people hurt. So this page is
-		short, specific, and written to be held against us. If something here stops being true, it
-		changes on the same day.
-	</p>
-</article>
+<section class="relative overflow-hidden">
+	<div
+		class="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(90%_70%_at_78%_-10%,color-mix(in_oklab,var(--color-brand)_16%,transparent),transparent_60%)]"
+	></div>
+	<div
+		class="pointer-events-none absolute -top-10 right-0 -z-10 h-[420px] w-[520px] khatam text-brand opacity-[0.07]"
+	></div>
+	<article class="wrap grid justify-items-start gap-6 pt-14 pb-12 md:pt-20 md:pb-16">
+		<span class="chip chip-on">Updated {updated}</span>
+		<h1 class="big">Privacy</h1>
+		<p class="lead measure">
+			A record of who prays, and where, is the kind of thing that gets people hurt. So this page is
+			short, specific, and written to be held against us. If something here stops being true, it
+			changes on the same day.
+		</p>
+	</article>
+</section>
 
-<div class="rule"></div>
-
-<section class="grid gap-7 py-11 md:py-16">
+<section class="wrap grid gap-7 py-11 md:py-16">
 	<div class="grid justify-items-start gap-3">
-		<span class="label">Today</span>
 		<h2>Everything we hold right now</h2>
 		<p class="lead measure">
 			Yuce is not open yet. There are no accounts, no posts and no feed, so there is very little to
@@ -58,25 +63,22 @@
 		</p>
 	</div>
 
-	<div class="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] items-start gap-3">
-		<article class="grid content-start gap-2 card">
-			<span class="label">01</span>
+	<div class="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] items-start gap-3.5">
+		<article class="grid lift content-start gap-2">
 			<h3 class="title">Your email address</h3>
 			<p class="sub">
 				Because you asked for an invite, and an invite has to reach you somewhere. It is used for
 				that and nothing else. No newsletter, no announcements, no “we thought you’d like”.
 			</p>
 		</article>
-		<article class="grid content-start gap-2 card">
-			<span class="label">02</span>
+		<article class="grid lift content-start gap-2">
 			<h3 class="title">Your city, if you gave one</h3>
 			<p class="sub">
 				We open one community at a time, so the city decides who we can invite next. It is the name
 				you typed — a city, not a location, not a coordinate, not anything your phone told us.
 			</p>
 		</article>
-		<article class="grid content-start gap-2 card">
-			<span class="label">03</span>
+		<article class="grid lift content-start gap-2">
 			<h3 class="title">The date you asked</h3>
 			<p class="sub">
 				So the list stays in order and the people who asked first are invited first. That is the
@@ -86,36 +88,37 @@
 	</div>
 </section>
 
-<section class="grid gap-7 py-11 md:py-16">
-	<div class="grid justify-items-start gap-3">
-		<span class="label">Never</span>
-		<h2>What we will not do</h2>
-		<p class="lead measure">
-			Promises are cheap, so these are written as things the app is structurally unable to do rather
-			than things we intend to avoid. Data that is never collected cannot be sold, leaked, or handed
-			to someone with a warrant.
-		</p>
+<section class="relative mt-6 overflow-hidden band">
+	<div class="pointer-events-none absolute inset-0 khatam text-white opacity-[0.09]"></div>
+	<div class="relative wrap grid gap-8 py-16 md:py-20">
+		<div class="grid justify-items-start gap-3">
+			<h2>What we will not do</h2>
+			<p class="lead measure">
+				Promises are cheap, so these are written as things the app is structurally unable to do
+				rather than things we intend to avoid. Data that is never collected cannot be sold, leaked,
+				or handed to someone with a warrant.
+			</p>
+		</div>
+		<ol class="m-0 grid list-none gap-5 p-0 sm:grid-cols-2 lg:grid-cols-4">
+			{#each never as [t, d], i (t)}
+				<li class="flex items-start gap-3">
+					<span class="badge">{i + 1}</span>
+					<div class="grid gap-1">
+						<h3 class="title">{t}</h3>
+						<p class="sub">{d}</p>
+					</div>
+				</li>
+			{/each}
+		</ol>
 	</div>
-	<ol class="m-0 grid list-none grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-5 p-0">
-		{#each never as [t, d], i (t)}
-			<li class="flex items-start gap-3">
-				<span class="badge">{i + 1}</span>
-				<div class="grid gap-1">
-					<h3 class="title">{t}</h3>
-					<p class="sub">{d}</p>
-				</div>
-			</li>
-		{/each}
-	</ol>
 </section>
 
-<section class="grid gap-7 py-11 md:py-16">
+<section class="wrap grid gap-7 py-14 md:py-20">
 	<div class="grid justify-items-start gap-3">
-		<span class="label">Where it is</span>
 		<h2>The part we are not finished with</h2>
 	</div>
-	<div class="grid grid-cols-[repeat(auto-fit,minmax(290px,1fr))] items-start gap-3">
-		<article class="grid content-start gap-2 card ring-[1.5px] ring-accent ring-inset">
+	<div class="grid grid-cols-[repeat(auto-fit,minmax(290px,1fr))] items-start gap-3.5">
+		<article class="grid lift content-start gap-2 ring-[1.5px] ring-accent ring-inset">
 			<h3 class="title">The waitlist sits on US-hosted infrastructure</h3>
 			<p class="sub">
 				It is a managed Postgres database run by an American company. For a list of email addresses
@@ -125,15 +128,15 @@
 				to be somewhere you are not comfortable with, you will know before you post anything.
 			</p>
 		</article>
-		<div class="grid gap-3">
-			<article class="grid content-start gap-2 card">
+		<div class="grid gap-3.5">
+			<article class="grid lift content-start gap-2">
 				<h3 class="title">How long we keep it</h3>
 				<p class="sub">
 					Until you are invited and have an account, or until you ask us to delete it, or until we
 					give up on opening in your city — whichever comes first.
 				</p>
 			</article>
-			<article class="grid content-start gap-2 card">
+			<article class="grid lift content-start gap-2">
 				<h3 class="title">Who else can see it</h3>
 				<p class="sub">
 					The people building Yuce, and the database provider that stores it. Nobody else has been
@@ -144,9 +147,8 @@
 	</div>
 </section>
 
-<section class="grid gap-7 py-11 md:py-16">
+<section class="wrap grid gap-7 pb-14 md:pb-20">
 	<div class="grid justify-items-start gap-3">
-		<span class="label">Your say</span>
 		<h2>Getting your data back, or gone</h2>
 		<p class="lead measure">
 			Email <a class="link" href="mailto:privacy@yuce.app">privacy@yuce.app</a> and ask. We will tell
@@ -160,11 +162,14 @@
 	</div>
 </section>
 
-<section class="grid justify-items-start gap-4.5 border-t border-sunk py-12 md:py-20">
-	<h2>If this page ever gets longer, read it again.</h2>
-	<p class="lead measure">
-		Privacy policies grow when someone has found a new use for your data. This one is dated at the
-		top, and any change will say what changed and why.
-	</p>
-	<a class="btn-solid" href="/#invite">Request an invite</a>
+<section class="relative overflow-hidden border-t border-sunk">
+	<div class="pointer-events-none absolute inset-0 khatam text-brand opacity-[0.06]"></div>
+	<div class="relative wrap grid justify-items-center gap-5 py-20 text-center md:py-24">
+		<h2 class="max-w-[22ch]">If this page ever gets longer, read it again.</h2>
+		<p class="lead max-w-[54ch]">
+			Privacy policies grow when someone has found a new use for your data. This one is dated at the
+			top, and any change will say what changed and why.
+		</p>
+		<a class="btn-solid mt-1" href="/#invite">Request an invite</a>
+	</div>
 </section>
