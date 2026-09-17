@@ -6,6 +6,10 @@ Every user-facing change, newest first. Dates are the day the change landed.
 
 ### Added
 
+- Sign in with a code sent to your email. No password to forget, and none for us to
+  lose. A code lasts ten minutes, works once, and stops accepting guesses after five.
+- Accounts. A handle is taken from your address and made unique, and you can sign out
+  from the home page.
 - Privacy page: what is collected today (an email, a city if you gave one, the date),
   what the app is structurally unable to do, where the data currently sits, and how to
   have it deleted. Dated, and short enough to read.
