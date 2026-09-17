@@ -5,12 +5,23 @@
 		deleteComment,
 		deletePost,
 		getComments,
-		getFeed
+		getFeed,
+		toggleLike
 	} from './feed.remote';
+	import IconHeart from '~icons/hugeicons/favourite';
+	import IconReply from '~icons/hugeicons/bubble-chat';
+	import IconFlag from '~icons/hugeicons/flag-02';
+	import IconDelete from '~icons/hugeicons/delete-02';
+	import IconSend from '~icons/hugeicons/sent';
 	import { reportContent } from './report.remote';
 	import { appealRemoval, getMyRemovals } from './removals.remote';
 	import { RULES, ruleLabel } from '#lib/rules.js';
 	import type { PageData } from './$types';
+
+	// One instance per thing being reported, created once and handed to both snippets:
+	// calling `.for(key)` in two places gives two instances, and only one of them ever
+	// learns that the report was sent.
+	type ReportForm = ReturnType<typeof reportContent.for>;
 
 	let { data }: { data: PageData } = $props();
 
@@ -52,15 +63,37 @@
 	<meta name="robots" content="noindex" />
 </svelte:head>
 
-{#snippet reportBox(kind: 'post' | 'comment', id: string)}
+{#snippet reportAction(kind: 'post' | 'comment', id: string, sent: ReportForm)}
 	{@const key = `${kind}:${id}`}
-	{@const sent = reportContent.for(key)}
 	{#if sent.result?.reported}
-		<p class="mono" role="status">
-			Reported. A moderator reads it, and you are told what happened.
-		</p>
-	{:else if reporting === key}
-		<form class="grid gap-2 border-t border-sunk pt-3" {...sent}>
+		<span class="act text-accent" role="status">
+			<IconFlag class="size-4" />
+			<span class="text-[12px]">Reported</span>
+		</span>
+	{:else}
+		<button
+			class="act"
+			aria-label="Report this {kind}"
+			aria-expanded={reporting === key}
+			onclick={() => (reporting = reporting === key ? null : key)}
+		>
+			<IconFlag class="size-4" />
+		</button>
+	{/if}
+{/snippet}
+
+{#snippet reportForm(kind: 'post' | 'comment', id: string, sent: ReportForm)}
+	{@const key = `${kind}:${id}`}
+	{#if !sent.result?.reported}
+		<form
+			class="grid gap-2 border-t border-sunk pt-3"
+			{...sent.enhance(async ({ submit }) => {
+				await submit();
+				// Closed by the thing that knows it succeeded, rather than by a second
+				// render noticing the result a moment later.
+				if (sent.result?.reported) reporting = null;
+			})}
+		>
 			<input {...sent.fields.kind.as('hidden', kind)} />
 			<input {...sent.fields.id.as('hidden', id)} />
 			<label class="label" for="rule-{key}">Which rule does this break?</label>
@@ -86,8 +119,6 @@
 				<button class="btn btn-sm" type="button" onclick={() => (reporting = null)}>Cancel</button>
 			</div>
 		</form>
-	{:else}
-		<button class="btn justify-self-start btn-sm" onclick={() => (reporting = key)}>Report</button>
 	{/if}
 {/snippet}
 
@@ -161,6 +192,7 @@
 		<div class="flex items-center justify-between gap-3">
 			<span class="mono">{1000 - (createPost.fields.body.value()?.length ?? 0)} left</span>
 			<button class="btn-solid" type="submit" disabled={createPost.pending > 0}>
+				<IconSend class="size-4" />
 				{createPost.pending > 0 ? 'Posting…' : 'Post'}
 			</button>
 		</div>
@@ -198,6 +230,8 @@
 
 		{#each await getFeed(scope) as item (item.id)}
 			{@const open = openPost === item.id}
+			{@const flagPost = reportContent.for(`post:${item.id}`)}
+			{@const replyForm = addComment.for(item.id)}
 			<article class="grid gap-2 card">
 				{@render byline(item.authorName, item.authorHandle, item.createdAt)}
 				{#if item.body === null}
@@ -209,28 +243,50 @@
 					<p class="whitespace-pre-wrap">{item.body}</p>
 				{/if}
 
-				<div class="flex flex-wrap items-center gap-2">
+				<div class="flex flex-wrap items-center gap-1 pt-1">
+					<button
+						class="act"
+						aria-pressed={item.liked}
+						aria-label={item.liked ? 'Undo your like' : 'Like this'}
+						onclick={() => toggleLike(item.id)}
+						disabled={toggleLike.pending > 0}
+					>
+						<IconHeart class="size-4 {item.liked ? 'text-accent' : ''}" />
+						{#if item.likes > 0}<span class="num text-[12px]">{count.format(item.likes)}</span>{/if}
+					</button>
+
+					<button
+						class="act"
+						aria-label="Replies"
+						aria-expanded={open}
+						title={open ? 'Hide replies' : replies(item.replies)}
+						onclick={() => (openPost = open ? null : item.id)}
+					>
+						<IconReply class="size-4" />
+						{#if item.replies > 0}<span class="num text-[12px]">{count.format(item.replies)}</span
+							>{/if}
+					</button>
+
+					{#if item.authorId !== data.user.id && item.body !== null}
+						{@render reportAction('post', item.id, flagPost)}
+					{/if}
+
 					{#if item.authorId === data.user.id}
 						{@const remove = deletePost.for(item.id)}
 						<form {...remove}>
 							<input {...remove.fields.id.as('hidden', item.id)} />
-							<button class="btn btn-sm" type="submit">Delete</button>
+							<button class="act" type="submit" aria-label="Delete this post">
+								<IconDelete class="size-4" />
+							</button>
 						</form>
 					{/if}
-					{#if item.authorId !== data.user.id && item.body !== null}
-						{@render reportBox('post', item.id)}
-					{/if}
-					<button
-						class="btn btn-sm"
-						aria-expanded={open}
-						onclick={() => (openPost = open ? null : item.id)}
-					>
-						{open ? 'Hide replies' : item.replies > 0 ? replies(item.replies) : 'Reply'}
-					</button>
 				</div>
 
+				{#if reporting === `post:${item.id}`}
+					{@render reportForm('post', item.id, flagPost)}
+				{/if}
+
 				{#if open}
-					{@const reply = addComment.for(item.id)}
 					<div class="mt-1 grid gap-3 border-t border-sunk pt-3">
 						<svelte:boundary>
 							{#snippet pending()}
@@ -238,6 +294,7 @@
 							{/snippet}
 
 							{#each await getComments(item.id) as reply (reply.id)}
+								{@const flagReply = reportContent.for(`comment:${reply.id}`)}
 								<div class="grid gap-1">
 									{@render byline(reply.authorName, reply.authorHandle, reply.createdAt)}
 									{#if reply.body === null}
@@ -247,38 +304,45 @@
 									{:else}
 										<p class="whitespace-pre-wrap">{reply.body}</p>
 									{/if}
-									{#if reply.authorId !== data.user.id && reply.body !== null}
-										{@render reportBox('comment', reply.id)}
-									{/if}
-									{#if reply.authorId === data.user.id}
-										{@const removeReply = deleteComment.for(reply.id)}
-										<form class="justify-self-start" {...removeReply}>
-											<input {...removeReply.fields.id.as('hidden', reply.id)} />
-											<button class="btn btn-sm" type="submit">Delete reply</button>
-										</form>
+									<div class="flex flex-wrap items-center gap-1">
+										{#if reply.authorId !== data.user.id && reply.body !== null}
+											{@render reportAction('comment', reply.id, flagReply)}
+										{/if}
+										{#if reply.authorId === data.user.id}
+											{@const removeReply = deleteComment.for(reply.id)}
+											<form {...removeReply}>
+												<input {...removeReply.fields.id.as('hidden', reply.id)} />
+												<button class="act" type="submit" aria-label="Delete this reply">
+													<IconDelete class="size-4" />
+												</button>
+											</form>
+										{/if}
+									</div>
+									{#if reporting === `comment:${reply.id}`}
+										{@render reportForm('comment', reply.id, flagReply)}
 									{/if}
 								</div>
 							{/each}
 						</svelte:boundary>
 
-						<form class="grid gap-2" {...reply}>
-							<input {...reply.fields.postId.as('hidden', item.id)} />
+						<form class="grid gap-2" {...replyForm}>
+							<input {...replyForm.fields.postId.as('hidden', item.id)} />
 							<label class="vh" for="reply-{item.id}">Your reply</label>
 							<textarea
 								class="min-h-[64px] field resize-y"
 								id="reply-{item.id}"
-								{...reply.fields.body.as('text')}
+								{...replyForm.fields.body.as('text')}
 								maxlength="500"
 								placeholder="Reply to {item.authorName}"></textarea>
-							{#each reply.fields.allIssues() ?? [] as issue (issue.message)}
+							{#each replyForm.fields.allIssues() ?? [] as issue (issue.message)}
 								<p class="text-sm font-semibold text-danger" role="alert">{issue.message}</p>
 							{/each}
 							<button
 								class="btn-solid justify-self-start btn-sm"
 								type="submit"
-								disabled={reply.pending > 0}
+								disabled={replyForm.pending > 0}
 							>
-								{reply.pending > 0 ? 'Sending…' : 'Send reply'}
+								{replyForm.pending > 0 ? 'Sending…' : 'Send reply'}
 							</button>
 						</form>
 					</div>

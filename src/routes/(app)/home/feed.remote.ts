@@ -1,9 +1,9 @@
 import { error, invalid } from '@sveltejs/kit';
-import { form, getRequestEvent, query } from '$app/server';
+import { command, form, getRequestEvent, query } from '$app/server';
 import * as v from 'valibot';
-import { and, asc, desc, eq, exists, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, exists, isNull, or, sql } from 'drizzle-orm';
 import { db } from '#lib/server/db/index.js';
-import { comment, follow, post, user } from '#lib/server/db/schema.js';
+import { comment, follow, post, postLike, user } from '#lib/server/db/schema.js';
 import { notBlocked } from '#lib/server/visibility.js';
 
 const MAX_LENGTH = 1000;
@@ -47,7 +47,14 @@ export const getFeed = query(v.picklist(['following', 'everyone']), async (scope
 			authorId: post.authorId,
 			authorName: user.name,
 			authorHandle: user.handle,
-			replies: sql<number>`(select count(*)::int from ${comment} where ${comment.postId} = ${post.id} and ${comment.removedAt} is null)`
+			// `$count`, not hand-written SQL: drizzle only qualifies column names in a
+			// subquery when the outer query has a join, and one day this one will not.
+			replies: db.$count(comment, and(eq(comment.postId, post.id), isNull(comment.removedAt))),
+			likes: db.$count(postLike, eq(postLike.postId, post.id)),
+			liked: sql<boolean>`exists (
+				select 1 from ${postLike}
+				where ${postLike.postId} = ${post.id} and ${postLike.userId} = ${me.id}
+			)`
 		})
 		.from(post)
 		.innerJoin(user, eq(user.id, post.authorId))
@@ -154,4 +161,26 @@ export const deleteComment = form(v.object({ id }), async ({ id }, issue) => {
 	await getFeed('following').refresh();
 	await getFeed('everyone').refresh();
 	return { deleted: true };
+});
+
+export const toggleLike = command(id, async (postId) => {
+	const me = signedIn();
+
+	const [target] = await db.select({ id: post.id }).from(post).where(eq(post.id, postId));
+	if (!target) error(404, 'That post is gone.');
+
+	const [already] = await db
+		.select({ one: sql`1` })
+		.from(postLike)
+		.where(and(eq(postLike.postId, postId), eq(postLike.userId, me.id)));
+
+	if (already) {
+		await db.delete(postLike).where(and(eq(postLike.postId, postId), eq(postLike.userId, me.id)));
+	} else {
+		await db.insert(postLike).values({ postId, userId: me.id });
+	}
+
+	await getFeed('following').refresh();
+	await getFeed('everyone').refresh();
+	return { liked: !already };
 });

@@ -171,3 +171,18 @@ export const block = pgTable(
 		index('block_blocked_idx').on(t.blockedId)
 	]
 );
+
+/** One row per person per post. No weights, no scores — it is a count, not a signal. */
+export const postLike = pgTable(
+	'post_like',
+	{
+		postId: text('post_id')
+			.notNull()
+			.references(() => post.id, { onDelete: 'cascade' }),
+		userId: text('user_id')
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		createdAt: timestamp('created_at').notNull().defaultNow()
+	},
+	(t) => [primaryKey({ columns: [t.postId, t.userId] }), index('post_like_post_idx').on(t.postId)]
+);

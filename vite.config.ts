@@ -1,4 +1,5 @@
 import tailwindcss from '@tailwindcss/vite';
+import Icons from 'unplugin-icons/vite';
 import { defineConfig } from 'vitest/config';
 import { playwright } from '@vitest/browser-playwright';
 import adapter from '@sveltejs/adapter-auto';
@@ -11,6 +12,9 @@ export default defineConfig({
 	preview: { port: 5189, strictPort: true },
 	plugins: [
 		tailwindcss(),
+		// Hugeicons, compiled into the bundle at build time. Iconify's data is a package
+		// here, not a request: the page promises no third party and that includes icons.
+		Icons({ compiler: 'svelte' }),
 		sveltekit({
 			compilerOptions: {
 				// Force runes mode for the project, except for libraries. Can be removed in svelte 6.

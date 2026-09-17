@@ -60,7 +60,7 @@ test('a reply appears in the thread and counts on the post', async ({ page }) =>
 	const card = page.locator('article').filter({ hasText: body });
 	await expect(card).toBeVisible();
 
-	await card.getByRole('button', { name: 'Reply', exact: true }).click();
+	await card.getByRole('button', { name: 'Replies' }).click();
 
 	const reply = `Wa alaikum assalam — ${Date.now()}`;
 	await card.getByPlaceholder(/^Reply to /).fill(reply);
@@ -68,11 +68,12 @@ test('a reply appears in the thread and counts on the post', async ({ page }) =>
 	await expect(card.getByText(reply)).toBeVisible();
 
 	// The count only shows on a closed thread, and it is counted, not pluralised by hand.
-	await card.getByRole('button', { name: 'Hide replies' }).click();
-	await expect(card.getByRole('button', { name: '1 reply' })).toBeVisible();
+	const replies = card.getByRole('button', { name: 'Replies' });
+	await replies.click();
+	await expect(replies).toHaveAttribute('title', '1 reply');
 
-	await card.getByRole('button', { name: '1 reply' }).click();
-	await card.getByRole('button', { name: 'Delete reply' }).click();
+	await replies.click();
+	await card.getByRole('button', { name: 'Delete this reply' }).click();
 	await expect(card.getByText(reply)).toHaveCount(0);
 });
 
@@ -88,9 +89,32 @@ test('an empty reply is refused', async ({ page }) => {
 	// Wait for the post to land before acting on it: under parallel workers the feed
 	// refresh is slower than the click.
 	await expect(card).toBeVisible();
-	await card.getByRole('button', { name: 'Reply', exact: true }).click();
+	await card.getByRole('button', { name: 'Replies' }).click();
 
 	await card.getByPlaceholder(/^Reply to /).fill('  ');
 	await card.getByRole('button', { name: 'Send reply' }).click();
 	await expect(card.getByText('Write something first.')).toBeVisible();
+});
+
+test('a like counts once and can be taken back', async ({ page }) => {
+	await signIn(page);
+	await page.goto('/home');
+
+	const body = `Worth a like — ${Date.now()}`;
+	await page.getByPlaceholder("Say something worth someone's time.").fill(body);
+	await page.getByRole('button', { name: 'Post' }).click();
+
+	const card = page.locator('article').filter({ hasText: body });
+	await expect(card).toBeVisible();
+
+	const like = card.getByRole('button', { name: 'Like this' });
+	await expect(like).toHaveAttribute('aria-pressed', 'false');
+	await like.click();
+
+	const liked = card.getByRole('button', { name: 'Undo your like' });
+	await expect(liked).toContainText('1');
+
+	// Clicking again takes it back rather than adding a second.
+	await liked.click();
+	await expect(card.getByRole('button', { name: 'Like this' })).not.toContainText('1');
 });

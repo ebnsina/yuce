@@ -848,16 +848,36 @@ details[open] > summary .chevron {
 	}
 }
 
+/* A post's own controls: quiet until touched, and a 36px target rather than a 16px
+   glyph, because these are the buttons people actually use. */
 @utility act {
 	display: inline-flex;
 	align-items: center;
+	justify-content: center;
 	gap: 6px;
+	min-height: 32px;
+	padding: 6px 10px;
+	border: 0;
+	border-radius: var(--radius-full);
+	background: transparent;
 	color: var(--color-faint);
+	font-family: var(--font-sans);
 	font-size: 12px;
 	font-weight: 600;
-	transition: color 120ms ease;
-	&:hover {
+	cursor: pointer;
+	transition:
+		color 120ms ease,
+		background 120ms ease;
+	&:hover:not(:disabled) {
 		color: var(--color-accent);
+		background: var(--color-sunk);
+	}
+	&[aria-pressed='true'] {
+		color: var(--color-accent);
+	}
+	&:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
 	}
 }
 

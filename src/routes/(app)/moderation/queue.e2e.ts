@@ -32,10 +32,10 @@ test('a reported post reaches the queue and can be removed', async ({ page, brow
 	const card = page.locator('article').filter({ hasText: body });
 	await expect(card).toBeVisible();
 
-	await card.getByRole('button', { name: 'Report' }).click();
+	await card.getByRole('button', { name: 'Report this post' }).click();
 	await card.getByLabel('Which rule does this break?').selectOption('gheebah');
 	await card.getByRole('button', { name: 'Send report' }).click();
-	await expect(card.getByText('Reported.')).toBeVisible();
+	await expect(card.getByText('Reported')).toBeVisible();
 
 	// A moderator sees it waiting, and removing it takes the words off the feed.
 	const mod = await browser.newPage();
@@ -66,10 +66,10 @@ test('leaving a report alone keeps the post up', async ({ page, browser }) => {
 	await page.getByRole('button', { name: 'Everyone' }).click();
 	const card = page.locator('article').filter({ hasText: body });
 	await expect(card).toBeVisible();
-	await card.getByRole('button', { name: 'Report' }).click();
+	await card.getByRole('button', { name: 'Report this post' }).click();
 	await card.getByLabel('Which rule does this break?').selectOption('spam');
 	await card.getByRole('button', { name: 'Send report' }).click();
-	await expect(card.getByText('Reported.')).toBeVisible();
+	await expect(card.getByText('Reported')).toBeVisible();
 
 	const mod = await browser.newPage();
 	await signIn(mod, { moderator: true });
@@ -105,10 +105,10 @@ test('the author is told, can appeal, and a second moderator can put it back', a
 	await page.getByRole('button', { name: 'Everyone' }).click();
 	const card = page.locator('article').filter({ hasText: body });
 	await expect(card).toBeVisible();
-	await card.getByRole('button', { name: 'Report' }).click();
+	await card.getByRole('button', { name: 'Report this post' }).click();
 	await card.getByLabel('Which rule does this break?').selectOption('gheebah');
 	await card.getByRole('button', { name: 'Send report' }).click();
-	await expect(card.getByText('Reported.')).toBeVisible();
+	await expect(card.getByText('Reported')).toBeVisible();
 
 	const firstMod = await browser.newPage();
 	await signIn(firstMod, { moderator: true });

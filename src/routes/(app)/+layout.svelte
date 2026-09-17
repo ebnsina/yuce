@@ -1,5 +1,9 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import IconHome from '~icons/hugeicons/home-01';
+	import IconUser from '~icons/hugeicons/user';
+	import IconSettings from '~icons/hugeicons/settings-02';
+	import IconShield from '~icons/hugeicons/shield-01';
 	import { signOut } from '../login/auth.remote';
 	import { whoToFollow } from './suggestions.remote';
 	import type { LayoutData } from './$types';
@@ -10,17 +14,9 @@
 	const here = (path: string) => page.url.pathname === path;
 
 	const links = $derived([
-		{ href: '/home', label: 'Home', icon: 'M3 11.5 12 4l9 7.5M6 10v10h12V10' },
-		{
-			href: `/@${me.handle}`,
-			label: 'Profile',
-			icon: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 21a8 8 0 0 1 16 0'
-		},
-		{
-			href: '/settings',
-			label: 'Settings',
-			icon: 'M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z M19 12a7 7 0 0 0-.1-1.1l2-1.5-2-3.4-2.3 1a7 7 0 0 0-1.9-1.1L14.4 3H9.6l-.3 2.9a7 7 0 0 0-1.9 1.1l-2.3-1-2 3.4 2 1.5A7 7 0 0 0 5 12c0 .4 0 .7.1 1.1l-2 1.5 2 3.4 2.3-1c.6.5 1.2.8 1.9 1.1l.3 2.9h4.8l.3-2.9c.7-.3 1.3-.6 1.9-1.1l2.3 1 2-3.4-2-1.5c0-.4.1-.7.1-1.1Z'
-		}
+		{ href: '/home', label: 'Home', icon: IconHome },
+		{ href: `/@${me.handle}`, label: 'Profile', icon: IconUser },
+		{ href: '/settings', label: 'Settings', icon: IconSettings }
 	]);
 </script>
 
@@ -40,24 +36,13 @@
 
 		<nav class="flex gap-1 overflow-x-auto pb-3 lg:grid lg:gap-0.5 lg:overflow-visible lg:pb-0">
 			{#each links as link (link.href)}
+				{@const Icon = link.icon}
 				<a
 					class="side-link whitespace-nowrap {here(link.href) ? 'side-link--on' : ''}"
 					href={link.href}
 					aria-current={here(link.href) ? 'page' : undefined}
 				>
-					<svg
-						width="18"
-						height="18"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="1.7"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						aria-hidden="true"
-					>
-						<path d={link.icon} />
-					</svg>
+					<Icon class="size-[18px]" />
 					{link.label}
 				</a>
 			{/each}
@@ -66,19 +51,7 @@
 					class="side-link whitespace-nowrap {here('/moderation') ? 'side-link--on' : ''}"
 					href="/moderation"
 				>
-					<svg
-						width="18"
-						height="18"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="1.7"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						aria-hidden="true"
-					>
-						<path d="M12 3 20 6.5v5c0 5-3.4 8.3-8 9.5-4.6-1.2-8-4.5-8-9.5v-5L12 3Z" />
-					</svg>
+					<IconShield class="size-[18px]" />
 					Queue
 				</a>
 			{/if}

@@ -6,6 +6,12 @@ Every user-facing change, newest first. Dates are the day the change landed.
 
 ### Added
 
+- Likes. One per person per post, with the count beside it, and clicking again takes
+  it back.
+- Reply counts sit on the post itself, so you can see a conversation exists without
+  opening it.
+- Icons throughout, from Hugeicons, compiled into the bundle rather than fetched.
+
 - Blocking. One row, working both ways: neither of you sees the other, and the
   follow in either direction goes with it.
 - Download everything we hold about you from your settings, as one file you can read
