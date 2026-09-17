@@ -10,10 +10,9 @@
 	const count = new Intl.NumberFormat('en');
 	const when = new Intl.DateTimeFormat('en', { dateStyle: 'medium' });
 
-	let typed = $state('');
-	$effect(() => {
-		typed = text;
-	});
+	// Writable derived: the box follows the URL, and typing overrides it until the
+	// next navigation.
+	let typed = $derived(text);
 
 	function run(event: SubmitEvent) {
 		event.preventDefault();
