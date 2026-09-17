@@ -6,6 +6,9 @@ Every user-facing change, newest first. Dates are the day the change landed.
 
 ### Added
 
+- Privacy page: what is collected today (an email, a city if you gave one, the date),
+  what the app is structurally unable to do, where the data currently sits, and how to
+  have it deleted. Dated, and short enough to read.
 - Landing page: the positioning, the content policy in plain language, how moderation
   works, and an invite request form.
 - Invite waitlist. Email and optional city, stored once per address — asking twice is
