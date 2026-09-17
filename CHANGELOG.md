@@ -6,6 +6,14 @@ Every user-facing change, newest first. Dates are the day the change landed.
 
 ### Added
 
+- You are told when something of yours is taken down, at the top of your own page,
+  with the rule that was applied — not left to find it in the feed.
+- Appeals. One level, a human, 48 hours, and the moderator who removed it cannot be
+  the one who reads the objection to their own decision.
+- In development, the login code appears on the login page as well as the terminal,
+  so an account can be made without going to look for it.
+- `pnpm moderator <email>` appoints or removes a moderator.
+
 - A report button on every post and reply, with the rule you are reporting under
   named in plain language. Reporting the same thing twice does nothing, and you are
   told what happens next.

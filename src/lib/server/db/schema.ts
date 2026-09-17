@@ -97,3 +97,27 @@ export const report = pgTable(
 	},
 	(t) => [index('report_state_idx').on(t.state, t.createdAt)]
 );
+
+/**
+ * One appeal per removal, one level, read by a person. Kept after it is settled for
+ * the same reason reports are: an overturned removal is the number that matters most.
+ */
+export const appeal = pgTable(
+	'appeal',
+	{
+		id: text('id').primaryKey(),
+		reportId: text('report_id')
+			.notNull()
+			.unique()
+			.references(() => report.id, { onDelete: 'cascade' }),
+		authorId: text('author_id')
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		note: text('note').notNull(),
+		state: text('state').notNull().default('open'),
+		decidedBy: text('decided_by').references(() => user.id, { onDelete: 'set null' }),
+		decidedAt: timestamp('decided_at'),
+		createdAt: timestamp('created_at').notNull().defaultNow()
+	},
+	(t) => [index('appeal_state_idx').on(t.state, t.createdAt)]
+);

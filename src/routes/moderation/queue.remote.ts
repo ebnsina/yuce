@@ -3,7 +3,7 @@ import { form, getRequestEvent, query } from '$app/server';
 import * as v from 'valibot';
 import { desc, eq, sql } from 'drizzle-orm';
 import { db } from '#lib/server/db/index.js';
-import { comment, post, report, user } from '#lib/server/db/schema.js';
+import { appeal, comment, post, report, user } from '#lib/server/db/schema.js';
 import { getComments, getFeed } from '../home/feed.remote.js';
 
 function moderator() {
@@ -99,5 +99,73 @@ export const decide = form(
 		}
 
 		return { decided: verdict };
+	}
+);
+
+/** Appeals are a second queue, read by a person who did not make the first decision. */
+export const getAppeals = query(async () => {
+	moderator();
+
+	const author = user;
+	return db
+		.select({
+			id: appeal.id,
+			note: appeal.note,
+			createdAt: appeal.createdAt,
+			rule: report.rule,
+			kind: report.targetKind,
+			decidedBy: report.decidedBy,
+			authorHandle: author.handle,
+			words: sql<string | null>`coalesce(
+				(select p.body from ${post} p where p.id = ${report.targetId} and ${report.targetKind} = 'post'),
+				(select c.body from ${comment} c where c.id = ${report.targetId} and ${report.targetKind} = 'comment')
+			)`
+		})
+		.from(appeal)
+		.innerJoin(report, eq(report.id, appeal.reportId))
+		.innerJoin(author, eq(author.id, appeal.authorId))
+		.where(eq(appeal.state, 'open'))
+		.orderBy(appeal.createdAt);
+});
+
+export const settleAppeal = form(
+	v.object({
+		id: v.pipe(v.string(), v.uuid()),
+		verdict: v.picklist(['overturned', 'upheld'])
+	}),
+	async ({ id, verdict }, issue) => {
+		const me = moderator();
+
+		const [row] = await db
+			.select({ appeal, report })
+			.from(appeal)
+			.innerJoin(report, eq(report.id, appeal.reportId))
+			.where(eq(appeal.id, id));
+		if (!row || row.appeal.state !== 'open') {
+			invalid(issue.id('That appeal has already been settled.'));
+		}
+		// Whoever removed it does not get to judge the objection to their own decision.
+		if (row.report.decidedBy === me.id) {
+			invalid(issue.id('You made this removal, so somebody else has to read the appeal.'));
+		}
+
+		if (verdict === 'overturned') {
+			const table = row.report.targetKind === 'post' ? post : comment;
+			await db
+				.update(table)
+				.set({ removedAt: null, removedReason: null })
+				.where(eq(table.id, row.report.targetId));
+			await db.update(report).set({ state: 'kept' }).where(eq(report.id, row.report.id));
+		}
+
+		await db
+			.update(appeal)
+			.set({ state: verdict, decidedBy: me.id, decidedAt: new Date() })
+			.where(eq(appeal.id, id));
+
+		await getAppeals().refresh();
+		await getTally().refresh();
+		await getFeed().refresh();
+		return { settled: verdict };
 	}
 );

@@ -22,6 +22,17 @@ refuses to start without it. `RESEND_API_KEY` and `EMAIL_FROM` are optional in d
 where login codes are printed to the terminal instead of emailed, and required in
 production.
 
+## Making an account
+
+Sign in at `/login` with any address. There is no mail provider in development, so the
+six-digit code is printed on the page and in the terminal. To see the moderation queue,
+sign in once and then:
+
+```sh
+pnpm moderator you@example.com       # appoint
+pnpm moderator you@example.com off   # stand down
+```
+
 ## Checks
 
 ```sh

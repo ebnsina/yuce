@@ -41,7 +41,9 @@ export const requestCode = form(v.object({ email, next }), async ({ email }, iss
 		invalid(issue.email('We could not send the code just now. Please try again in a minute.'));
 	}
 
-	return { sent: true, email };
+	// Dev has no mail provider, so the code is handed back to the page as well as the
+	// terminal. import.meta.env.DEV is replaced at build time, so this cannot ship.
+	return { sent: true, email, devCode: import.meta.env.DEV ? issued.code : undefined };
 });
 
 export const verifyCode = form(

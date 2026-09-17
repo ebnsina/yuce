@@ -24,6 +24,17 @@
 			We sent a six-digit code to <strong>{email}</strong>. It works once, for ten minutes.
 		</p>
 
+		{#if requestCode.result?.devCode}
+			<p class="grid gap-1 rounded-md border border-accent px-4 py-3" role="status">
+				<span class="label">Development only</span>
+				<span
+					>No mail provider is configured, so the code is <b class="num"
+						>{requestCode.result.devCode}</b
+					>.</span
+				>
+			</p>
+		{/if}
+
 		<form class="grid w-full gap-2.5" {...verifyCode}>
 			<input {...verifyCode.fields.email.as('hidden', email)} />
 			<input {...verifyCode.fields.next.as('hidden', data.next)} />

@@ -9,6 +9,7 @@
 		getFeed
 	} from './feed.remote';
 	import { reportContent } from './report.remote';
+	import { appealRemoval, getMyRemovals } from './removals.remote';
 	import { RULES, ruleLabel } from '#lib/rules.js';
 	import type { PageData } from './$types';
 
@@ -106,6 +107,51 @@
 			Sign out
 		</button>
 	</header>
+
+	<svelte:boundary>
+		{#snippet pending()}
+			<span class="vh">Checking for notices</span>
+		{/snippet}
+		{#each await getMyRemovals() as gone (gone.reportId)}
+			{@const appealForm = appealRemoval.for(gone.reportId)}
+			{@const hoursLeft = 48 - (Date.now() - (gone.decidedAt?.getTime() ?? 0)) / 3_600_000}
+			<article class="grid gap-2 card border border-danger">
+				<span class="label">Removed by a moderator</span>
+				<h2 class="title">Your {gone.kind} was taken down — {ruleLabel(gone.rule)}</h2>
+				{#if gone.appealState === 'open'}
+					<p class="sub">Your appeal is with a moderator. A person reads it within 48 hours.</p>
+				{:else if gone.appealState === 'upheld'}
+					<p class="sub">Appealed and upheld. The removal stands, and that is the end of it.</p>
+				{:else if hoursLeft <= 0}
+					<p class="sub">The 48 hours for appealing have passed.</p>
+				{:else}
+					<form class="grid gap-2" {...appealForm}>
+						<input {...appealForm.fields.reportId.as('hidden', gone.reportId)} />
+						<label class="sub" for="appeal-{gone.reportId}">
+							If we got this wrong, say why. One level, a human, within 48 hours —
+							{Math.ceil(hoursLeft)} left.
+						</label>
+						<textarea
+							class="min-h-[64px] field resize-y"
+							id="appeal-{gone.reportId}"
+							{...appealForm.fields.note.as('text')}
+							maxlength="1000"
+							placeholder="Why this should not have come down"></textarea>
+						{#each appealForm.fields.allIssues() ?? [] as issue (issue.message)}
+							<p class="text-sm font-semibold text-danger" role="alert">{issue.message}</p>
+						{/each}
+						<button
+							class="btn justify-self-start btn-sm"
+							type="submit"
+							disabled={appealForm.pending > 0}
+						>
+							{appealForm.pending > 0 ? 'Sending…' : 'Appeal this'}
+						</button>
+					</form>
+				{/if}
+			</article>
+		{/each}
+	</svelte:boundary>
 
 	<form class="grid gap-3 card" {...createPost}>
 		<label class="vh" for="body">What are you writing?</label>

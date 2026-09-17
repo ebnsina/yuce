@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { decide, getQueue, getTally } from './queue.remote';
+	import { decide, getAppeals, getQueue, getTally, settleAppeal } from './queue.remote';
 	import { ruleLabel } from '#lib/rules.js';
 
 	const exact = new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeStyle: 'short' });
@@ -7,6 +7,8 @@
 
 	const wording: Record<string, string> = {
 		open: 'waiting',
+		overturned: 'overturned on appeal',
+		upheld: 'upheld on appeal',
 		removed: 'removed',
 		kept: 'left alone'
 	};
@@ -39,6 +41,50 @@
 				<li class="mono">Nothing reported yet.</li>
 			{/each}
 		</ul>
+	</svelte:boundary>
+
+	<svelte:boundary>
+		{#snippet pending()}
+			<span class="vh">Checking for appeals</span>
+		{/snippet}
+		{#each await getAppeals() as item (item.id)}
+			{@const settle = settleAppeal.for(item.id)}
+			<article class="grid gap-3 card border border-accent">
+				<header class="flex flex-wrap items-baseline gap-2">
+					<span class="label">Appeal</span>
+					<span class="title">{ruleLabel(item.rule)}</span>
+					<span class="mono">@{item.authorHandle} · {exact.format(item.createdAt)}</span>
+				</header>
+				<blockquote class="border-l-2 border-muted pl-3 whitespace-pre-wrap">
+					{item.words ?? 'The content is gone.'}
+				</blockquote>
+				<p class="sub">“{item.note}”</p>
+				<form class="flex flex-wrap gap-2" {...settle}>
+					<input {...settle.fields.id.as('hidden', item.id)} />
+					<button
+						class="btn-solid btn-sm"
+						type="submit"
+						name={settle.fields.verdict.as('submit', 'overturned').name}
+						value="overturned"
+						disabled={settle.pending > 0}
+					>
+						Put it back
+					</button>
+					<button
+						class="btn btn-sm"
+						type="submit"
+						name={settle.fields.verdict.as('submit', 'upheld').name}
+						value="upheld"
+						disabled={settle.pending > 0}
+					>
+						Removal stands
+					</button>
+				</form>
+				{#each settle.fields.allIssues() ?? [] as issue (issue.message)}
+					<p class="text-sm font-semibold text-danger" role="alert">{issue.message}</p>
+				{/each}
+			</article>
+		{/each}
 	</svelte:boundary>
 
 	<svelte:boundary>
