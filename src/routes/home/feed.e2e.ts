@@ -111,6 +111,9 @@ test('an empty reply is refused', async ({ page }) => {
 	await page.getByRole('button', { name: 'Post' }).click();
 
 	const card = page.locator('article').filter({ hasText: body });
+	// Wait for the post to land before acting on it: under parallel workers the feed
+	// refresh is slower than the click.
+	await expect(card).toBeVisible();
 	await card.getByRole('button', { name: 'Reply', exact: true }).click();
 
 	await card.getByPlaceholder(/^Reply to /).fill('  ');

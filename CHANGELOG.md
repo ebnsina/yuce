@@ -15,6 +15,17 @@ Every user-facing change, newest first. Dates are the day the change landed.
 
 ### Changed
 
+- Only the part of a photo that crosses the line is blurred now, not the whole
+  picture. A family at a walima is still a family at a walima.
+- Instrumental music is stripped from an upload rather than muted. Vocals stay.
+  Muted meant off for whoever found the setting and playing for everyone else.
+- No city is named anywhere. Invites go out in groups so nobody arrives to an empty
+  room, and that is all the page promises.
+- The feed on the landing page is a stack rather than a list, which costs a third of
+  the height and still shows every byline.
+- Burgundy grounds are an aurora rather than a flat fill. Contrast was measured at
+  the lightest point, not the average: white 6.9:1, dim 5.5:1, faint 4.7:1.
+
 - The landing page and the privacy page were rebuilt so they stop reading like
   documentation: a burgundy band carries the content policy, the blur is something
   you tap rather than a paragraph about tapping, and the feed beside the pitch looks

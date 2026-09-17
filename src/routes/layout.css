@@ -707,27 +707,115 @@ details[open] > summary .chevron {
    is redefined for the subtree, so .lead, .mono, .card and the rest keep working
    inside it. White on #7A1F3D is 10.04:1, on the dark fill #8C1D3F it is 8.89:1. */
 @utility band {
-	background:
-		radial-gradient(
-			120% 90% at 85% 0%,
-			color-mix(in oklab, #ffffff 12%, transparent),
-			transparent 60%
-		),
-		linear-gradient(
-			160deg,
-			var(--color-brand),
-			color-mix(in oklab, var(--color-brand) 74%, #2b0713)
-		);
+	@apply aurora;
 	color: #ffffff;
 	--color-ink: #ffffff;
-	--color-dim: color-mix(in oklab, #ffffff 80%, transparent);
-	--color-faint: color-mix(in oklab, #ffffff 66%, transparent);
+	--color-dim: color-mix(in oklab, #ffffff 86%, transparent);
+	--color-faint: color-mix(in oklab, #ffffff 76%, transparent);
 	--color-muted: color-mix(in oklab, #ffffff 30%, transparent);
 	--color-sunk: color-mix(in oklab, #ffffff 12%, transparent);
 	--color-accent: #ffffff;
 	--color-solid: #ffffff;
 	--color-on-solid: var(--color-brand);
 	--color-card: color-mix(in oklab, #ffffff 9%, transparent);
+}
+
+/* Aurora: four soft lights drifting over a deep burgundy ground. Every stop is a
+   mix of the brand with white or with the same near-black, so the whole field stays
+   inside one hue and white text keeps at least 6:1 over its lightest point. */
+@utility aurora {
+	background:
+		radial-gradient(
+			70% 55% at 12% 8%,
+			color-mix(in oklab, #ffffff 10%, transparent),
+			transparent 70%
+		),
+		radial-gradient(
+			55% 45% at 88% 12%,
+			color-mix(in oklab, var(--color-accent) 22%, transparent),
+			transparent 68%
+		),
+		radial-gradient(
+			65% 60% at 72% 96%,
+			color-mix(in oklab, #ffffff 7%, transparent),
+			transparent 72%
+		),
+		radial-gradient(
+			50% 50% at 28% 88%,
+			color-mix(in oklab, #2b0713 45%, transparent),
+			transparent 70%
+		),
+		linear-gradient(
+			155deg,
+			color-mix(in oklab, var(--color-brand) 94%, #ffffff),
+			color-mix(in oklab, var(--color-brand) 70%, #2b0713)
+		);
+}
+
+/* The same lights at a whisper, for a ground that still has to read as the page. */
+@utility aurora-faint {
+	background:
+		radial-gradient(
+			60% 50% at 82% -8%,
+			color-mix(in oklab, var(--color-brand) 18%, transparent),
+			transparent 66%
+		),
+		radial-gradient(
+			55% 45% at 6% 18%,
+			color-mix(in oklab, var(--color-accent) 12%, transparent),
+			transparent 70%
+		),
+		radial-gradient(
+			70% 60% at 50% 108%,
+			color-mix(in oklab, var(--color-brand) 10%, transparent),
+			transparent 72%
+		);
+}
+
+/* Only the part that crosses the line. The patch sits over its own region of the
+   photograph and frosts what is behind it; everything outside it is untouched. */
+@utility veil-patch {
+	position: absolute;
+	border-radius: var(--radius-sm);
+	corner-shape: squircle;
+	backdrop-filter: blur(10px) saturate(0.85);
+	-webkit-backdrop-filter: blur(10px) saturate(0.85);
+	background: color-mix(in oklab, var(--color-bg) 22%, transparent);
+	box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-ink) 12%, transparent);
+	transition:
+		backdrop-filter 200ms ease,
+		opacity 200ms ease;
+}
+
+/* A deck rather than a list: the cards sit on each other until you look at them,
+   which costs three quarters of the height of three full cards. */
+@utility deck {
+	& > * + * {
+		margin-top: -52px;
+		transition:
+			margin-top 420ms cubic-bezier(0.22, 1, 0.36, 1),
+			transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+	}
+	/* Each card covers the tail of the one before it, the way a stack of paper does,
+	   so every byline stays visible and only the actions row is hidden. */
+	& > * {
+		position: relative;
+		transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+	}
+	&:hover > * + *,
+	&:focus-within > * + * {
+		margin-top: 14px;
+	}
+	&:hover > *,
+	&:focus-within > * {
+		transform: none;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.deck > * + * {
+		margin-top: 14px;
+	}
 }
 
 /* Khatam: the eight-point star as two overlapping squares, the oldest structural
@@ -793,5 +881,4 @@ details[open] > summary .chevron {
 			transparent 70%
 		),
 		linear-gradient(120deg, var(--color-sunk), var(--color-muted), var(--color-sunk));
-	filter: blur(2px);
 }

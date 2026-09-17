@@ -74,8 +74,9 @@
 		<article class="grid lift content-start gap-2">
 			<h3 class="title">Your city, if you gave one</h3>
 			<p class="sub">
-				We open one community at a time, so the city decides who we can invite next. It is the name
-				you typed — a city, not a location, not a coordinate, not anything your phone told us.
+				Invites go out in groups so nobody arrives to an empty room, and a city is how we group
+				them. It is the name you typed — a city, not a location, not a coordinate, not anything your
+				phone told us.
 			</p>
 		</article>
 		<article class="grid lift content-start gap-2">
@@ -133,7 +134,7 @@
 				<h3 class="title">How long we keep it</h3>
 				<p class="sub">
 					Until you are invited and have an account, or until you ask us to delete it, or until we
-					give up on opening in your city — whichever comes first.
+					give up on opening near you — whichever comes first.
 				</p>
 			</article>
 			<article class="grid lift content-start gap-2">

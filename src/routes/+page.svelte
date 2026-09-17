@@ -40,6 +40,7 @@
 		'Slander',
 		'Takfir and sect-bashing',
 		'Alcohol, pork, gambling',
+		'Instrumental music',
 		'Riba',
 		'Dating',
 		'Fabricated hadith'
@@ -109,9 +110,7 @@
 
 <!-- The pitch on one side, the thing itself on the other. -->
 <section class="relative overflow-hidden">
-	<div
-		class="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(90%_70%_at_78%_-10%,color-mix(in_oklab,var(--color-brand)_16%,transparent),transparent_60%)]"
-	></div>
+	<div class="pointer-events-none absolute inset-0 -z-10 aurora-faint"></div>
 	<div
 		class="pointer-events-none absolute -top-10 right-0 -z-10 h-[420px] w-[520px] khatam text-brand opacity-[0.07]"
 	></div>
@@ -141,8 +140,8 @@
 						class="rounded-md border border-accent bg-card px-4 py-3.5 text-[15px] font-medium"
 						role="status"
 					>
-						You are on the list. We open one community at a time, and you will hear from us before
-						anyone else in your city does.
+						You are on the list. Invites go out in groups, so that nobody arrives to an empty room —
+						you will hear from us before the room fills.
 					</p>
 				{:else}
 					<div
@@ -175,7 +174,7 @@
 						<p class="text-sm font-semibold text-danger" role="alert">{issue.message}</p>
 					{/each}
 					<p class="mono">
-						Dhaka first. No marketing email, ever — only your invite.
+						No marketing email, ever — only your invite.
 						<svelte:boundary>
 							{#if (await waitingCount()) > 0}
 								· <span class="num text-ink">{await waitingCount()}</span> waiting
@@ -187,9 +186,12 @@
 		</div>
 
 		<!-- Not a screenshot: the real components, with invented people in them. -->
-		<div class="grid gap-3.5" aria-label="What the feed looks like">
+		<div class="deck grid" aria-label="What the feed looks like">
 			{#each demo as p, i (p.handle)}
-				<article class="grid lift gap-2 {['md:mr-3', 'md:mr-1.5 md:ml-3.5', 'md:ml-7'][i]}">
+				<article
+					class="grid lift gap-2"
+					style="z-index: {i + 1}; transform: rotate({(i - 1) * 0.5}deg)"
+				>
 					<header class="flex items-center gap-2.5">
 						{@render avatar(p.name)}
 						<span class="title">{p.name}</span>
@@ -290,12 +292,15 @@
 	<div class="grid justify-items-start gap-4">
 		<h2>Blurred, not deleted.</h2>
 		<p class="lead measure">
-			A photo over the modesty line is hidden behind a tap, not removed. Deleting it punishes a
-			woman for being in a photograph and starts the same public argument every time. The blur is
-			rendered on our server — the clear image is never sent to a screen that should not show it.
+			Only the part that crosses the line is blurred, and only until you tap it. The rest of the
+			photograph is left alone — a family at a walima is still a family at a walima. Deleting the
+			whole picture punishes a woman for being in it and starts the same public argument every time.
+			The blur is rendered on our server, so the clear pixels are never sent to a screen that should
+			not show them.
 		</p>
 		<p class="sub measure">
-			Video and reels play silent until you say otherwise, and stay that way by default.
+			Video carries vocals only. Instrumental music is stripped from an upload rather than muted, so
+			it is gone for everyone rather than off for whoever found the setting.
 		</p>
 	</div>
 
@@ -310,8 +315,9 @@
 				<span class="block text-[15px]"
 					>Cousin’s walima last night. Whole family in one frame for once.</span
 				>
-				<span class="veil h-44 cursor-pointer veil-mock group-open:[filter:none]">
-					<span class="veil__note">
+				<span class="veil relative h-44 cursor-pointer veil-mock">
+					<span class="veil-patch top-5 left-6 h-24 w-[42%] group-open:opacity-0"></span>
+					<span class="veil__note bottom-3 left-1/2 -translate-x-1/2">
 						<svg
 							width="15"
 							height="15"
@@ -327,12 +333,12 @@
 								r="2.6"
 							/>
 						</svg>
-						<span class="group-open:hidden">Blurred · tap to see it</span>
+						<span class="group-open:hidden">One part blurred · tap to see it</span>
 						<span class="hidden group-open:inline">Hide it again</span>
 					</span>
 				</span>
-			</span>
-		</summary>
+			</span></summary
+		>
 		<p class="mono">
 			You chose to look. That is where modesty rules put the decision — on the one looking, not on
 			the one in the photograph.
@@ -368,10 +374,10 @@
 <section class="relative overflow-hidden border-t border-sunk">
 	<div class="pointer-events-none absolute inset-0 khatam text-brand opacity-[0.06]"></div>
 	<div class="relative wrap grid justify-items-center gap-5 py-20 text-center md:py-28">
-		<h2 class="max-w-[16ch]">Built in Dhaka, for wherever you are.</h2>
+		<h2 class="max-w-[18ch]">Wherever you pray, this is for you.</h2>
 		<p class="lead max-w-[54ch]">
 			One community at a time, because a feed of strangers is a graveyard and a feed of neighbours
-			is worth opening. Tell us your city and we will come to it.
+			is worth opening. Tell us where you are and we will open near you.
 		</p>
 		<a class="btn-solid mt-1" href="#invite">Request an invite</a>
 	</div>
