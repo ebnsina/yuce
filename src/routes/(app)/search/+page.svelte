@@ -53,7 +53,7 @@
 				<h2 class="label">Newest here</h2>
 				{#each await recentVoices() as person (person.handle)}
 					<a class="grid gap-0.5" href="/@{person.handle}">
-						<span class="title text-[15px]">{person.name}</span>
+						<span class="title">{person.name}</span>
 						<span class="mono">@{person.handle}</span>
 					</a>
 				{:else}
@@ -69,7 +69,7 @@
 					<h2 class="label">People</h2>
 					{#each await findPeople(text) as person (person.handle)}
 						<a class="grid gap-0.5 card" href="/@{person.handle}">
-							<span class="title text-[15px]">{person.name}</span>
+							<span class="title">{person.name}</span>
 							<span class="mono">
 								@{person.handle} · {count.format(person.posts)}
 								{person.posts === 1 ? 'post' : 'posts'}

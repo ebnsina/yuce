@@ -61,7 +61,7 @@
 
 		<div class="mt-auto hidden lg:grid lg:gap-2 lg:pt-6">
 			<a class="grid gap-0.5 rounded-md px-3 py-2 hover:bg-sunk" href="/@{me.handle}">
-				<span class="title text-[15px]">{me.name}</span>
+				<span class="title">{me.name}</span>
 				<span class="mono">@{me.handle}</span>
 			</a>
 			<button class="btn btn-sm" onclick={() => signOut()} disabled={signOut.pending > 0}>
@@ -85,7 +85,7 @@
 						<h2 class="label">People here</h2>
 						{#each await whoToFollow() as person (person.handle)}
 							<a class="grid gap-0.5" href="/@{person.handle}">
-								<span class="title text-[15px]">{person.name}</span>
+								<span class="title">{person.name}</span>
 								<span class="mono">
 									@{person.handle} · {person.posts}
 									{person.posts === 1 ? 'post' : 'posts'}
