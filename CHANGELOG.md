@@ -6,6 +6,13 @@ Every user-facing change, newest first. Dates are the day the change landed.
 
 ### Added
 
+- Blocking. One row, working both ways: neither of you sees the other, and the
+  follow in either direction goes with it.
+- Download everything we hold about you from your settings, as one file you can read
+  without this app.
+- Delete your account from your settings. Your posts, replies, follows and blocks go
+  with it, and deleted means the rows are gone.
+
 - Profiles at `/@handle`: name, a line about you, what you have written, and how many
   people you follow and are followed by.
 - Following, and a feed that respects it. Two lists — the people you follow, and

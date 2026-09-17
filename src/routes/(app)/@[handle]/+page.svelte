@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { ruleLabel } from '#lib/rules.js';
-	import { getPostsBy, getProfile, toggleFollow } from './profile.remote';
+	import { getPostsBy, getProfile, toggleBlock, toggleFollow } from './profile.remote';
 
 	const handle = $derived(page.params.handle!);
 	const joined = new Intl.DateTimeFormat('en', { month: 'long', year: 'numeric' });
@@ -42,13 +42,31 @@
 			{#if person.isMe}
 				<a class="btn btn-sm" href="/settings">Edit your profile</a>
 			{:else}
-				<button
-					class={person.followed ? 'btn btn-sm' : 'btn-solid btn-sm'}
-					onclick={() => toggleFollow(handle)}
-					disabled={toggleFollow.pending > 0}
-				>
-					{person.followed ? 'Following' : 'Follow'}
-				</button>
+				<div class="flex flex-wrap gap-2">
+					{#if !person.hidden}
+						<button
+							class={person.followed ? 'btn btn-sm' : 'btn-solid btn-sm'}
+							onclick={() => toggleFollow(handle)}
+							disabled={toggleFollow.pending > 0}
+						>
+							{person.followed ? 'Following' : 'Follow'}
+						</button>
+					{/if}
+					<button
+						class="btn btn-sm"
+						onclick={() => toggleBlock(handle)}
+						disabled={toggleBlock.pending > 0}
+					>
+						{person.blocked ? 'Unblock' : 'Block'}
+					</button>
+				</div>
+				{#if person.hidden}
+					<p class="sub measure">
+						{person.blocked
+							? 'You have blocked this person. Neither of you sees the other, and the follow in either direction is gone.'
+							: 'There is a block between you. Neither of you sees the other.'}
+					</p>
+				{/if}
 			{/if}
 		</header>
 	</svelte:boundary>

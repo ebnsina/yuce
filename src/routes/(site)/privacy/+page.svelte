@@ -157,8 +157,8 @@
 			gone, not flagged as hidden. No form, no retention offer, no asking why.
 		</p>
 		<p class="sub measure">
-			When accounts exist this becomes a button in your settings: one tap to export everything, one
-			tap to delete the account and everything in it. Until then, a human reads the email.
+			Both are buttons in your settings now: one downloads everything we hold about you as a file
+			you can read without this app, the other deletes the account and everything in it.
 		</p>
 	</div>
 </section>

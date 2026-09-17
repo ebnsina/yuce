@@ -4,6 +4,7 @@ import * as v from 'valibot';
 import { and, asc, desc, eq, exists, or, sql } from 'drizzle-orm';
 import { db } from '#lib/server/db/index.js';
 import { comment, follow, post, user } from '#lib/server/db/schema.js';
+import { notBlocked } from '#lib/server/visibility.js';
 
 const MAX_LENGTH = 1000;
 const MAX_COMMENT = 500;
@@ -50,14 +51,18 @@ export const getFeed = query(v.picklist(['following', 'everyone']), async (scope
 		})
 		.from(post)
 		.innerJoin(user, eq(user.id, post.authorId))
-		.where(scope === 'following' ? mine : undefined)
+		.where(
+			scope === 'following'
+				? and(mine, notBlocked(post.authorId, me.id))
+				: notBlocked(post.authorId, me.id)
+		)
 		.orderBy(desc(post.createdAt))
 		.limit(PAGE_SIZE);
 });
 
 /** Oldest first: a conversation reads downward, unlike the feed it hangs off. */
 export const getComments = query(id, async (postId) => {
-	signedIn();
+	const me = signedIn();
 
 	return db
 		.select({
@@ -71,7 +76,7 @@ export const getComments = query(id, async (postId) => {
 		})
 		.from(comment)
 		.innerJoin(user, eq(user.id, comment.authorId))
-		.where(eq(comment.postId, postId))
+		.where(and(eq(comment.postId, postId), notBlocked(comment.authorId, me.id)))
 		.orderBy(asc(comment.createdAt));
 });
 

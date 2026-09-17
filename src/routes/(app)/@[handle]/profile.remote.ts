@@ -1,9 +1,10 @@
 import { error } from '@sveltejs/kit';
 import { command, form, getRequestEvent, query } from '$app/server';
 import * as v from 'valibot';
-import { and, desc, eq, exists, isNull, sql } from 'drizzle-orm';
+import { and, desc, eq, exists, isNull, or, sql } from 'drizzle-orm';
 import { db } from '#lib/server/db/index.js';
-import { follow, post, user } from '#lib/server/db/schema.js';
+import { block, follow, post, user } from '#lib/server/db/schema.js';
+import { blockedBetween } from '#lib/server/visibility.js';
 import { getFeed } from '../home/feed.remote.js';
 
 function signedIn() {
@@ -41,11 +42,27 @@ export const getProfile = query(handle, async (name) => {
 		.where(eq(user.handle, name));
 
 	if (!person) error(404, 'Nobody here by that name.');
-	return { ...person, isMe: person.id === me.id };
+
+	const [blocked] = await db
+		.select({ one: sql`1` })
+		.from(block)
+		.where(and(eq(block.blockerId, me.id), eq(block.blockedId, person.id)));
+
+	return {
+		...person,
+		isMe: person.id === me.id,
+		blocked: Boolean(blocked),
+		// Their writing is hidden either way round, so the page says so either way round.
+		hidden: person.id !== me.id && (await blockedBetween(me.id, person.id))
+	};
 });
 
 export const getPostsBy = query(handle, async (name) => {
-	signedIn();
+	const me = signedIn();
+
+	const [them] = await db.select({ id: user.id }).from(user).where(eq(user.handle, name));
+	if (!them) error(404, 'Nobody here by that name.');
+	if (them.id !== me.id && (await blockedBetween(me.id, them.id))) return [];
 
 	return db
 		.select({
@@ -67,6 +84,7 @@ export const toggleFollow = command(handle, async (name) => {
 	const [them] = await db.select({ id: user.id }).from(user).where(eq(user.handle, name));
 	if (!them) error(404, 'Nobody here by that name.');
 	if (them.id === me.id) error(400, 'You cannot follow yourself.');
+	if (await blockedBetween(me.id, them.id)) error(403, 'There is a block between you.');
 
 	const [already] = await db
 		.select({ one: sql`1` })
@@ -111,3 +129,37 @@ export const saveProfile = form(
 		return { saved: true };
 	}
 );
+
+/** Blocking removes the follow in both directions: a door shut is a door shut. */
+export const toggleBlock = command(handle, async (name) => {
+	const me = signedIn();
+
+	const [them] = await db.select({ id: user.id }).from(user).where(eq(user.handle, name));
+	if (!them) error(404, 'Nobody here by that name.');
+	if (them.id === me.id) error(400, 'You cannot block yourself.');
+
+	const [already] = await db
+		.select({ one: sql`1` })
+		.from(block)
+		.where(and(eq(block.blockerId, me.id), eq(block.blockedId, them.id)));
+
+	if (already) {
+		await db.delete(block).where(and(eq(block.blockerId, me.id), eq(block.blockedId, them.id)));
+	} else {
+		await db.insert(block).values({ blockerId: me.id, blockedId: them.id });
+		await db
+			.delete(follow)
+			.where(
+				or(
+					and(eq(follow.followerId, me.id), eq(follow.followeeId, them.id)),
+					and(eq(follow.followerId, them.id), eq(follow.followeeId, me.id))
+				)
+			);
+	}
+
+	await getProfile(name).refresh();
+	await getPostsBy(name).refresh();
+	await getFeed('following').refresh();
+	await getFeed('everyone').refresh();
+	return { blocked: !already };
+});

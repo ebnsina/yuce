@@ -149,3 +149,25 @@ export const follow = pgTable(
 		index('follow_followee_idx').on(t.followeeId)
 	]
 );
+
+/**
+ * Blocking is one row and it works both ways: neither person sees the other. Kept
+ * separate from following so unfollowing somebody is not confused with shutting a
+ * door on them.
+ */
+export const block = pgTable(
+	'block',
+	{
+		blockerId: text('blocker_id')
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		blockedId: text('blocked_id')
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		createdAt: timestamp('created_at').notNull().defaultNow()
+	},
+	(t) => [
+		primaryKey({ columns: [t.blockerId, t.blockedId] }),
+		index('block_blocked_idx').on(t.blockedId)
+	]
+);
