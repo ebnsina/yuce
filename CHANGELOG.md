@@ -6,6 +6,13 @@ Every user-facing change, newest first. Dates are the day the change landed.
 
 ### Added
 
+- Up to four images on a post. They are stored in an S3-compatible bucket and served
+  through the app, so the bucket stays private and a sensitive image can be swapped
+  for its blurred version at that one place.
+- `pnpm seed` fills the database with a small community — people, posts with images,
+  replies, likes, follows, a report waiting in the queue and an appeal — so every
+  feature has something real to act on. `pnpm seed clear` removes exactly that.
+
 - Search, over people and the words in posts. Blocked people do not appear in it.
 
 - Likes. One per person per post, with the count beside it, and clicking again takes

@@ -186,3 +186,24 @@ export const postLike = pgTable(
 	},
 	(t) => [primaryKey({ columns: [t.postId, t.userId] }), index('post_like_post_idx').on(t.postId)]
 );
+
+/**
+ * Images belong to a post. The key is stored, never the bytes, and `sensitive` marks
+ * the ones a moderator has put behind a tap — the regions themselves come later.
+ */
+export const media = pgTable(
+	'media',
+	{
+		id: text('id').primaryKey(),
+		postId: text('post_id')
+			.notNull()
+			.references(() => post.id, { onDelete: 'cascade' }),
+		key: text('key').notNull(),
+		mime: text('mime').notNull(),
+		alt: text('alt'),
+		position: integer('position').notNull().default(0),
+		sensitive: boolean('sensitive').notNull().default(false),
+		createdAt: timestamp('created_at').notNull().defaultNow()
+	},
+	(t) => [index('media_post_idx').on(t.postId, t.position)]
+);

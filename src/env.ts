@@ -9,5 +9,10 @@ export const variables = defineEnvVars({
 	EMAIL_FROM: {
 		description: 'Sender address for login codes, e.g. "Yuce <hello@yuce.app>".',
 		schema: (value) => value
-	}
+	},
+	S3_ENDPOINT: { description: 'S3-compatible endpoint for images.' },
+	S3_REGION: { description: 'S3 region.' },
+	S3_ACCESS_KEY_ID: { description: 'S3 access key id.' },
+	S3_SECRET_ACCESS_KEY: { description: 'S3 secret access key.' },
+	S3_BUCKET: { description: 'Bucket that holds uploaded images.' }
 });

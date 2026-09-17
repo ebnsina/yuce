@@ -13,6 +13,7 @@
 	import IconFlag from '~icons/hugeicons/flag-02';
 	import IconDelete from '~icons/hugeicons/delete-02';
 	import IconSend from '~icons/hugeicons/sent';
+	import IconImage from '~icons/hugeicons/image-add-02';
 	import { reportContent } from './report.remote';
 	import { appealRemoval, getMyRemovals } from './removals.remote';
 	import { RULES, ruleLabel } from '#lib/rules.js';
@@ -32,6 +33,12 @@
 	// Following is the feed the product promises; everyone is how you find a first
 	// person to follow, which a following-only feed cannot do on its own.
 	let scope = $state<'following' | 'everyone'>('following');
+	// What is attached, named, so nobody posts a photograph they cannot see.
+	const chosen = $derived(
+		(createPost.fields.images.value() ?? [])
+			.filter((f): f is File => f instanceof File && f.size > 0)
+			.map((f) => f.name)
+	);
 
 	const relative = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
 	const exact = new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeStyle: 'short' });
@@ -178,7 +185,9 @@
 		{/each}
 	</svelte:boundary>
 
-	<form class="grid gap-3 card" {...createPost}>
+	<!-- multipart because of the image field: without it the enhanced and the native
+	     submit disagree about what a file is. -->
+	<form class="grid gap-3 card" enctype="multipart/form-data" {...createPost}>
 		<label class="vh" for="body">What are you writing?</label>
 		<textarea
 			class="min-h-[96px] field resize-y"
@@ -189,6 +198,17 @@
 		{#each createPost.fields.allIssues() ?? [] as issue (issue.message)}
 			<p class="text-sm font-semibold text-danger" role="alert">{issue.message}</p>
 		{/each}
+		<div class="flex flex-wrap items-center gap-2">
+			<label class="act cursor-pointer">
+				<IconImage class="size-4" />
+				<span>Add images</span>
+				<input class="vh" {...createPost.fields.images.as('file multiple')} accept="image/*" />
+			</label>
+			{#if chosen.length}
+				<span class="mono">{chosen.length} of 4 attached: {chosen.join(', ')}</span>
+			{/if}
+		</div>
+
 		<div class="flex items-center justify-between gap-3">
 			<span class="mono">{1000 - (createPost.fields.body.value()?.length ?? 0)} left</span>
 			<button class="btn-solid" type="submit" disabled={createPost.pending > 0}>
@@ -234,6 +254,36 @@
 			{@const replyForm = addComment.for(item.id)}
 			<article class="grid gap-2 card">
 				{@render byline(item.authorName, item.authorHandle, item.createdAt)}
+				{#if item.images.length && item.body !== null}
+					<div class="grid gap-2 {item.images.length > 1 ? 'sm:grid-cols-2' : ''}">
+						{#each item.images as image (image.key)}
+							{#if image.sensitive}
+								<details class="group">
+									<summary class="veil relative h-48 cursor-pointer list-none overflow-hidden">
+										<img
+											class="h-48 w-full rounded-md object-cover blur-xl group-open:blur-none"
+											src="/media/{image.key}"
+											alt={image.alt ?? ''}
+											loading="lazy"
+										/>
+										<span class="veil__note bottom-3 left-1/2 -translate-x-1/2">
+											<span class="group-open:hidden">Blurred · tap to see it</span>
+											<span class="hidden group-open:inline">Hide it again</span>
+										</span>
+									</summary>
+								</details>
+							{:else}
+								<img
+									class="h-48 w-full rounded-md object-cover"
+									src="/media/{image.key}"
+									alt={image.alt ?? ''}
+									loading="lazy"
+								/>
+							{/if}
+						{/each}
+					</div>
+				{/if}
+
 				{#if item.body === null}
 					<p class="sub">
 						Removed by a moderator — {ruleLabel(item.removedReason ?? 'other')}. The post stays in

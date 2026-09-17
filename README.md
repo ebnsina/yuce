@@ -22,6 +22,34 @@ refuses to start without it. `RESEND_API_KEY` and `EMAIL_FROM` are optional in d
 where login codes are printed to the terminal instead of emailed, and required in
 production.
 
+## Object storage
+
+Images live in an S3-compatible bucket. In development that is
+[VaultS3](https://vaults3.com) — a single self-hosted binary, no account, no cloud:
+
+```sh
+VAULTS3_ACCESS_KEY=yuce-dev VAULTS3_SECRET_KEY=yuce-dev-secret ./vaults3   # :9000
+vaults3-cli bucket create yuce-media
+```
+
+The five `S3_*` variables in `.env` point at it. The same five point at Cloudflare R2,
+Backblaze B2 or anything else that speaks S3 — nothing in the app knows which.
+
+## Seed data
+
+```sh
+pnpm seed         # five people, posts with images, replies, likes, follows,
+                  # a report in the queue, an appeal, three on the waitlist
+pnpm seed clear   # removes exactly what it made and nothing else
+```
+
+It prints a session token per person. Paste one into the browser console:
+
+```js
+document.cookie = 'yuce_session=<token>; path=/';
+location.href = '/home';
+```
+
 ## Making an account
 
 Sign in at `/login` with any address. There is no mail provider in development, so the

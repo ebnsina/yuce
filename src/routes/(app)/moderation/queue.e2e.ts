@@ -131,7 +131,9 @@ test('the author is told, can appeal, and a second moderator can put it back', a
 
 	// The moderator who removed it cannot judge the objection to their own decision.
 	await firstMod.reload();
-	const own = firstMod.locator('article').filter({ hasText: 'Appeal' });
+	// Scoped to this test's own post: the queue holds everyone's appeals, seeded ones
+	// included.
+	const own = firstMod.locator('article').filter({ hasText: body });
 	await own.getByRole('button', { name: 'Put it back' }).click();
 	await expect(firstMod.getByText('somebody else has to read the appeal')).toBeVisible();
 

@@ -3,7 +3,8 @@ import { command, form, getRequestEvent, query } from '$app/server';
 import * as v from 'valibot';
 import { and, asc, desc, eq, exists, isNull, or, sql } from 'drizzle-orm';
 import { db } from '#lib/server/db/index.js';
-import { comment, follow, post, postLike, user } from '#lib/server/db/schema.js';
+import { comment, follow, media, post, postLike, user } from '#lib/server/db/schema.js';
+import { MAX_IMAGES, checkImage, putImage } from '#lib/server/media.js';
 import { notBlocked } from '#lib/server/visibility.js';
 
 const MAX_LENGTH = 1000;
@@ -51,6 +52,11 @@ export const getFeed = query(v.picklist(['following', 'everyone']), async (scope
 			// subquery when the outer query has a join, and one day this one will not.
 			replies: db.$count(comment, and(eq(comment.postId, post.id), isNull(comment.removedAt))),
 			likes: db.$count(postLike, eq(postLike.postId, post.id)),
+			images: sql<{ key: string; alt: string | null; sensitive: boolean }[]>`coalesce((
+				select json_agg(json_build_object('key', m.key, 'alt', m.alt, 'sensitive', m.sensitive)
+					order by m.position)
+				from ${media} m where m.post_id = ${post.id}
+			), '[]'::json)`,
 			liked: sql<boolean>`exists (
 				select 1 from ${postLike}
 				where ${postLike.postId} = ${post.id} and ${postLike.userId} = ${me.id}
@@ -94,11 +100,33 @@ export const createPost = form(
 			v.trim(),
 			v.minLength(1, 'Write something first.'),
 			v.maxLength(MAX_LENGTH, `That is longer than ${MAX_LENGTH} characters.`)
-		)
+		),
+		images: v.optional(v.array(v.file()), [])
 	}),
-	async ({ body }) => {
+	async ({ body, images }, issue) => {
 		const author = signedIn();
-		await db.insert(post).values({ id: crypto.randomUUID(), authorId: author.id, body });
+
+		// Empty file inputs arrive as zero-byte files; they are not uploads.
+		const files = images.filter((f) => f.size > 0);
+		if (files.length > MAX_IMAGES) {
+			invalid(issue.images(`Four images at most, and you attached ${files.length}.`));
+		}
+		for (const file of files) {
+			const wrong = checkImage(file);
+			if (wrong) invalid(issue.images(wrong));
+		}
+
+		const postId = crypto.randomUUID();
+		await db.insert(post).values({ id: postId, authorId: author.id, body });
+
+		// Uploaded after the row exists, so an image can never outlive a failed insert.
+		let position = 0;
+		for (const file of files) {
+			const { key, mime } = await putImage(file);
+			await db
+				.insert(media)
+				.values({ id: crypto.randomUUID(), postId, key, mime, position: position++ });
+		}
 
 		// Send the new list back with this response rather than in a second round trip.
 		await getFeed('following').refresh();
