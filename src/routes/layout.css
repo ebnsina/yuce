@@ -4,16 +4,9 @@
    CDN, so no third party sits in the critical path — and on this product no third
    party sits anywhere near the client at all. */
 @font-face {
-	font-family: 'Archivo';
-	src: url('/fonts/archivo-latin.woff2') format('woff2');
-	font-weight: 400 700;
-	font-style: normal;
-	font-display: swap;
-}
-@font-face {
-	font-family: 'Clash Display';
-	src: url('/fonts/clash-display.woff2') format('woff2');
-	font-weight: 200 700;
+	font-family: 'Mona Sans';
+	src: url('/fonts/mona-sans.woff2') format('woff2');
+	font-weight: 200 900;
 	font-style: normal;
 	font-display: swap;
 }
@@ -56,8 +49,10 @@
 	--color-solid: var(--color-brand);
 	--color-on-solid: var(--color-on-brand);
 
-	--font-sans: 'Archivo', system-ui, -apple-system, sans-serif;
-	--font-display: 'Clash Display', 'Archivo', system-ui, sans-serif;
+	--font-sans: 'Mona Sans', system-ui, -apple-system, sans-serif;
+	/* One family, two voices: the display face is the same font at a larger optical
+	   size and a heavier weight, which is what a variable font is for. */
+	--font-display: 'Mona Sans', system-ui, -apple-system, sans-serif;
 	--font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
 	--radius-sk: 6px;
@@ -106,8 +101,8 @@
 		scroll-behavior: smooth;
 	}
 
-	/* Archivo sets the text, Clash Display sets the headings, Geist Mono carries
-	   anything a machine produced — counts, timestamps, handles. */
+	/* Mona Sans sets everything but the numbers; Geist Mono carries anything a machine
+	   produced — counts, timestamps, handles. */
 	body {
 		background: var(--color-bg);
 		color: var(--color-ink);
@@ -125,18 +120,19 @@
 	h3,
 	h4 {
 		font-family: var(--font-display);
+		font-variation-settings: 'opsz' 36;
 		text-wrap: balance;
 	}
 
 	h1 {
 		font-size: clamp(2.25rem, 1.5rem + 3vw, 3.5rem);
-		font-weight: 600;
+		font-weight: 800;
 		line-height: 0.98;
 		letter-spacing: -0.03em;
 	}
 	h2 {
 		font-size: clamp(1.75rem, 1.25rem + 1.9vw, 2.5rem);
-		font-weight: 600;
+		font-weight: 800;
 		line-height: 1.04;
 		letter-spacing: -0.025em;
 	}
@@ -202,8 +198,9 @@
 @layer components {
 	.big {
 		font-family: var(--font-display);
+		font-variation-settings: 'opsz' 40;
 		font-size: clamp(2.5rem, 1.55rem + 3.6vw, 4rem);
-		font-weight: 600;
+		font-weight: 800;
 		line-height: 0.94;
 		letter-spacing: -0.035em;
 		text-wrap: balance;
@@ -219,6 +216,7 @@
 
 	.title {
 		font-family: var(--font-display);
+		font-variation-settings: 'opsz' 20;
 		font-size: clamp(1rem, 0.95rem + 0.3vw, 1.125rem);
 		font-weight: 600;
 		line-height: 1.35;

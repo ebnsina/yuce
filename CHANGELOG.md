@@ -6,6 +6,8 @@ Every user-facing change, newest first. Dates are the day the change landed.
 
 ### Added
 
+- Search, over people and the words in posts. Blocked people do not appear in it.
+
 - Likes. One per person per post, with the count beside it, and clicking again takes
   it back.
 - Reply counts sit on the post itself, so you can see a conversation exists without
@@ -52,6 +54,10 @@ Every user-facing change, newest first. Dates are the day the change landed.
   written in.
 
 ### Changed
+
+- Liking and following happen the moment you click. The server confirms them; it no
+  longer decides when the screen may change.
+- Mona Sans throughout, one variable font doing both the text and the headings.
 
 - The signed-in pages no longer carry the marketing header and footer, and the
   content is centred rather than pinned to the left edge.

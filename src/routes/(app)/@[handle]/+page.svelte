@@ -46,8 +46,14 @@
 					{#if !person.hidden}
 						<button
 							class={person.followed ? 'btn btn-sm' : 'btn-solid btn-sm'}
-							onclick={() => toggleFollow(handle)}
-							disabled={toggleFollow.pending > 0}
+							onclick={() =>
+								toggleFollow(handle).updates(
+									getProfile(handle).withOverride((p) => ({
+										...p,
+										followed: !p.followed,
+										followers: p.followers + (p.followed ? -1 : 1)
+									}))
+								)}
 						>
 							{person.followed ? 'Following' : 'Follow'}
 						</button>

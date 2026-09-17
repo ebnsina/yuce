@@ -248,8 +248,16 @@
 						class="act"
 						aria-pressed={item.liked}
 						aria-label={item.liked ? 'Undo your like' : 'Like this'}
-						onclick={() => toggleLike(item.id)}
-						disabled={toggleLike.pending > 0}
+						onclick={() =>
+							toggleLike(item.id).updates(
+								getFeed(scope).withOverride((list) =>
+									list.map((p) =>
+										p.id === item.id
+											? { ...p, liked: !p.liked, likes: p.likes + (p.liked ? -1 : 1) }
+											: p
+									)
+								)
+							)}
 					>
 						<IconHeart class="size-4 {item.liked ? 'text-accent' : ''}" />
 						{#if item.likes > 0}<span class="num text-[12px]">{count.format(item.likes)}</span>{/if}

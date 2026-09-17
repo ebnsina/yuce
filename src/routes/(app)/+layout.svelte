@@ -3,6 +3,7 @@
 	import IconHome from '~icons/hugeicons/home-01';
 	import IconUser from '~icons/hugeicons/user';
 	import IconSettings from '~icons/hugeicons/settings-02';
+	import IconSearch from '~icons/hugeicons/search-01';
 	import IconShield from '~icons/hugeicons/shield-01';
 	import { signOut } from '../login/auth.remote';
 	import { whoToFollow } from './suggestions.remote';
@@ -16,6 +17,7 @@
 	const links = $derived([
 		{ href: '/home', label: 'Home', icon: IconHome },
 		{ href: `/@${me.handle}`, label: 'Profile', icon: IconUser },
+		{ href: '/search', label: 'Search', icon: IconSearch },
 		{ href: '/settings', label: 'Settings', icon: IconSettings }
 	]);
 </script>
