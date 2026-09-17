@@ -52,3 +52,19 @@ export const post = pgTable(
 	},
 	(t) => [index('post_created_idx').on(t.createdAt)]
 );
+
+export const comment = pgTable(
+	'comment',
+	{
+		id: text('id').primaryKey(),
+		postId: text('post_id')
+			.notNull()
+			.references(() => post.id, { onDelete: 'cascade' }),
+		authorId: text('author_id')
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		body: text('body').notNull(),
+		createdAt: timestamp('created_at').notNull().defaultNow()
+	},
+	(t) => [index('comment_post_idx').on(t.postId, t.createdAt)]
+);

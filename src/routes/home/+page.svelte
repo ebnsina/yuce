@@ -1,12 +1,26 @@
 <script lang="ts">
 	import { signOut } from '../login/auth.remote';
-	import { createPost, deletePost, getFeed } from './feed.remote';
+	import {
+		addComment,
+		createPost,
+		deleteComment,
+		deletePost,
+		getComments,
+		getFeed
+	} from './feed.remote';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
 
-	const when = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+	// One thread open at a time, and its replies are only fetched once it is.
+	let openPost = $state<string | null>(null);
+
+	const relative = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
 	const exact = new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeStyle: 'short' });
+	const count = new Intl.NumberFormat('en');
+	const plural = new Intl.PluralRules('en');
+	const replies = (n: number) =>
+		`${count.format(n)} ${plural.select(n) === 'one' ? 'reply' : 'replies'}`;
 
 	const units = [
 		['year', 31_536_000],
@@ -20,7 +34,7 @@
 	function ago(date: Date) {
 		const seconds = (Date.now() - date.getTime()) / 1000;
 		for (const [unit, size] of units) {
-			if (seconds >= size) return when.format(-Math.floor(seconds / size), unit);
+			if (seconds >= size) return relative.format(-Math.floor(seconds / size), unit);
 		}
 		return 'just now';
 	}
@@ -30,6 +44,14 @@
 	<title>Home — Yuce</title>
 	<meta name="robots" content="noindex" />
 </svelte:head>
+
+{#snippet byline(name: string, handle: string, at: Date)}
+	<header class="flex flex-wrap items-baseline gap-2">
+		<span class="title">{name}</span>
+		<span class="mono">@{handle}</span>
+		<time class="mono" datetime={at.toISOString()} title={exact.format(at)}>{ago(at)}</time>
+	</header>
+{/snippet}
 
 <section class="grid max-w-[620px] gap-6 py-10">
 	<header class="flex flex-wrap items-center justify-between gap-3">
@@ -54,9 +76,7 @@
 			<p class="text-sm font-semibold text-danger" role="alert">{issue.message}</p>
 		{/each}
 		<div class="flex items-center justify-between gap-3">
-			<span class="mono">
-				{1000 - (createPost.fields.body.value()?.length ?? 0)} left
-			</span>
+			<span class="mono">{1000 - (createPost.fields.body.value()?.length ?? 0)} left</span>
 			<button class="btn-solid" type="submit" disabled={createPost.pending > 0}>
 				{createPost.pending > 0 ? 'Posting…' : 'Post'}
 			</button>
@@ -77,23 +97,73 @@
 		{/snippet}
 
 		{#each await getFeed() as item (item.id)}
+			{@const open = openPost === item.id}
 			<article class="grid gap-2 card">
-				<header class="flex flex-wrap items-baseline gap-2">
-					<span class="title">{item.authorName}</span>
-					<span class="mono">@{item.authorHandle}</span>
-					<time class="mono" datetime={item.createdAt.toISOString()}>
-						{ago(item.createdAt)}
-					</time>
-				</header>
+				{@render byline(item.authorName, item.authorHandle, item.createdAt)}
 				<p class="whitespace-pre-wrap">{item.body}</p>
-				{#if item.authorId === data.user.id}
-					{@const form = deletePost.for(item.id)}
-					<form class="justify-self-start" {...form}>
-						<input {...form.fields.id.as('hidden', item.id)} />
-						<button class="btn btn-sm" type="submit">Delete</button>
-					</form>
+
+				<div class="flex flex-wrap items-center gap-2">
+					{#if item.authorId === data.user.id}
+						{@const remove = deletePost.for(item.id)}
+						<form {...remove}>
+							<input {...remove.fields.id.as('hidden', item.id)} />
+							<button class="btn btn-sm" type="submit">Delete</button>
+						</form>
+					{/if}
+					<button
+						class="btn btn-sm"
+						aria-expanded={open}
+						onclick={() => (openPost = open ? null : item.id)}
+					>
+						{open ? 'Hide replies' : item.replies > 0 ? replies(item.replies) : 'Reply'}
+					</button>
+				</div>
+
+				{#if open}
+					{@const reply = addComment.for(item.id)}
+					<div class="mt-1 grid gap-3 border-t border-sunk pt-3">
+						<svelte:boundary>
+							{#snippet pending()}
+								<div class="sk h-4 w-40" aria-label="Loading replies"></div>
+							{/snippet}
+
+							{#each await getComments(item.id) as reply (reply.id)}
+								<div class="grid gap-1">
+									{@render byline(reply.authorName, reply.authorHandle, reply.createdAt)}
+									<p class="whitespace-pre-wrap">{reply.body}</p>
+									{#if reply.authorId === data.user.id}
+										{@const removeReply = deleteComment.for(reply.id)}
+										<form class="justify-self-start" {...removeReply}>
+											<input {...removeReply.fields.id.as('hidden', reply.id)} />
+											<button class="btn btn-sm" type="submit">Delete reply</button>
+										</form>
+									{/if}
+								</div>
+							{/each}
+						</svelte:boundary>
+
+						<form class="grid gap-2" {...reply}>
+							<input {...reply.fields.postId.as('hidden', item.id)} />
+							<label class="vh" for="reply-{item.id}">Your reply</label>
+							<textarea
+								class="min-h-[64px] field resize-y"
+								id="reply-{item.id}"
+								{...reply.fields.body.as('text')}
+								maxlength="500"
+								placeholder="Reply to {item.authorName}"></textarea>
+							{#each reply.fields.allIssues() ?? [] as issue (issue.message)}
+								<p class="text-sm font-semibold text-danger" role="alert">{issue.message}</p>
+							{/each}
+							<button
+								class="btn-solid justify-self-start btn-sm"
+								type="submit"
+								disabled={reply.pending > 0}
+							>
+								{reply.pending > 0 ? 'Sending…' : 'Send reply'}
+							</button>
+						</form>
+					</div>
 				{/if}
-				<span class="vh">{exact.format(item.createdAt)}</span>
 			</article>
 		{:else}
 			<p class="sub">

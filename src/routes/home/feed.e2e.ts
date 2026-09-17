@@ -73,3 +73,47 @@ test('one person cannot delete another person’s post', async ({ page, browser 
 	await other.close();
 	expect(author.id).toBeTruthy();
 });
+
+test('a reply appears in the thread and counts on the post', async ({ page }) => {
+	await signIn(page);
+	await page.goto('/home');
+
+	const body = `A post worth replying to — ${Date.now()}`;
+	await page.getByPlaceholder("Say something worth someone's time.").fill(body);
+	await page.getByRole('button', { name: 'Post' }).click();
+
+	// Earlier tests leave posts behind, so every action is scoped to this one's article.
+	const card = page.locator('article').filter({ hasText: body });
+	await expect(card).toBeVisible();
+
+	await card.getByRole('button', { name: 'Reply', exact: true }).click();
+
+	const reply = `Wa alaikum assalam — ${Date.now()}`;
+	await card.getByPlaceholder(/^Reply to /).fill(reply);
+	await card.getByRole('button', { name: 'Send reply' }).click();
+	await expect(card.getByText(reply)).toBeVisible();
+
+	// The count only shows on a closed thread, and it is counted, not pluralised by hand.
+	await card.getByRole('button', { name: 'Hide replies' }).click();
+	await expect(card.getByRole('button', { name: '1 reply' })).toBeVisible();
+
+	await card.getByRole('button', { name: '1 reply' }).click();
+	await card.getByRole('button', { name: 'Delete reply' }).click();
+	await expect(card.getByText(reply)).toHaveCount(0);
+});
+
+test('an empty reply is refused', async ({ page }) => {
+	await signIn(page);
+	await page.goto('/home');
+
+	const body = `Post ${Date.now()}`;
+	await page.getByPlaceholder("Say something worth someone's time.").fill(body);
+	await page.getByRole('button', { name: 'Post' }).click();
+
+	const card = page.locator('article').filter({ hasText: body });
+	await card.getByRole('button', { name: 'Reply', exact: true }).click();
+
+	await card.getByPlaceholder(/^Reply to /).fill('  ');
+	await card.getByRole('button', { name: 'Send reply' }).click();
+	await expect(card.getByText('Write something first.')).toBeVisible();
+});

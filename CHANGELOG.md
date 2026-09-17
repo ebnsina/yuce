@@ -6,6 +6,9 @@ Every user-facing change, newest first. Dates are the day the change landed.
 
 ### Added
 
+- Replies. Open a thread under any post, reply in up to 500 characters, delete your
+  own. The reply count sits on the post, and a thread is only fetched once you open
+  it.
 - A feed. Write a post of up to 1,000 characters, read everyone else's newest first,
   and delete your own. No ranking, no scoring — the order is the order things were
   written in.
