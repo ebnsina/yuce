@@ -8,12 +8,16 @@
 		getComments,
 		getFeed
 	} from './feed.remote';
+	import { reportContent } from './report.remote';
+	import { RULES, ruleLabel } from '#lib/rules.js';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
 
 	// One thread open at a time, and its replies are only fetched once it is.
 	let openPost = $state<string | null>(null);
+	// The report form opens under the one thing being reported, never as a modal.
+	let reporting = $state<string | null>(null);
 
 	const relative = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
 	const exact = new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeStyle: 'short' });
@@ -44,6 +48,45 @@
 	<title>Home — Yuce</title>
 	<meta name="robots" content="noindex" />
 </svelte:head>
+
+{#snippet reportBox(kind: 'post' | 'comment', id: string)}
+	{@const key = `${kind}:${id}`}
+	{@const sent = reportContent.for(key)}
+	{#if sent.result?.reported}
+		<p class="mono" role="status">
+			Reported. A moderator reads it, and you are told what happened.
+		</p>
+	{:else if reporting === key}
+		<form class="grid gap-2 border-t border-sunk pt-3" {...sent}>
+			<input {...sent.fields.kind.as('hidden', kind)} />
+			<input {...sent.fields.id.as('hidden', id)} />
+			<label class="label" for="rule-{key}">Which rule does this break?</label>
+			<select class="select" id="rule-{key}" {...sent.fields.rule.as('select')}>
+				{#each RULES as rule (rule.id)}
+					<option value={rule.id}>{rule.label} — {rule.hint}</option>
+				{/each}
+			</select>
+			<label class="vh" for="note-{key}">Anything else we should know</label>
+			<textarea
+				class="min-h-[56px] field resize-y"
+				id="note-{key}"
+				{...sent.fields.note.as('text')}
+				maxlength="500"
+				placeholder="Anything else we should know (optional)"></textarea>
+			{#each sent.fields.allIssues() ?? [] as issue (issue.message)}
+				<p class="text-sm font-semibold text-danger" role="alert">{issue.message}</p>
+			{/each}
+			<div class="flex flex-wrap gap-2">
+				<button class="btn-solid btn-sm" type="submit" disabled={sent.pending > 0}>
+					{sent.pending > 0 ? 'Sending…' : 'Send report'}
+				</button>
+				<button class="btn btn-sm" type="button" onclick={() => (reporting = null)}>Cancel</button>
+			</div>
+		</form>
+	{:else}
+		<button class="btn justify-self-start btn-sm" onclick={() => (reporting = key)}>Report</button>
+	{/if}
+{/snippet}
 
 {#snippet byline(name: string, handle: string, at: Date)}
 	<header class="flex flex-wrap items-baseline gap-2">
@@ -100,7 +143,14 @@
 			{@const open = openPost === item.id}
 			<article class="grid gap-2 card">
 				{@render byline(item.authorName, item.authorHandle, item.createdAt)}
-				<p class="whitespace-pre-wrap">{item.body}</p>
+				{#if item.body === null}
+					<p class="sub">
+						Removed by a moderator — {ruleLabel(item.removedReason ?? 'other')}. The post stays in
+						place so the thread still makes sense; its words do not.
+					</p>
+				{:else}
+					<p class="whitespace-pre-wrap">{item.body}</p>
+				{/if}
 
 				<div class="flex flex-wrap items-center gap-2">
 					{#if item.authorId === data.user.id}
@@ -109,6 +159,9 @@
 							<input {...remove.fields.id.as('hidden', item.id)} />
 							<button class="btn btn-sm" type="submit">Delete</button>
 						</form>
+					{/if}
+					{#if item.authorId !== data.user.id && item.body !== null}
+						{@render reportBox('post', item.id)}
 					{/if}
 					<button
 						class="btn btn-sm"
@@ -130,7 +183,16 @@
 							{#each await getComments(item.id) as reply (reply.id)}
 								<div class="grid gap-1">
 									{@render byline(reply.authorName, reply.authorHandle, reply.createdAt)}
-									<p class="whitespace-pre-wrap">{reply.body}</p>
+									{#if reply.body === null}
+										<p class="sub">
+											Removed by a moderator — {ruleLabel(reply.removedReason ?? 'other')}.
+										</p>
+									{:else}
+										<p class="whitespace-pre-wrap">{reply.body}</p>
+									{/if}
+									{#if reply.authorId !== data.user.id && reply.body !== null}
+										{@render reportBox('comment', reply.id)}
+									{/if}
 									{#if reply.authorId === data.user.id}
 										{@const removeReply = deleteComment.for(reply.id)}
 										<form class="justify-self-start" {...removeReply}>

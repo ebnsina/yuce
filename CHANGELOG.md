@@ -6,6 +6,15 @@ Every user-facing change, newest first. Dates are the day the change landed.
 
 ### Added
 
+- A report button on every post and reply, with the rule you are reporting under
+  named in plain language. Reporting the same thing twice does nothing, and you are
+  told what happens next.
+- A moderation queue for moderators: oldest first, the reported words in full, and
+  two decisions — remove it, or leave it alone. Every decision is recorded against
+  the moderator who made it.
+- Removed content keeps its place in the thread and loses its words, with the rule
+  that was applied shown where it used to be. Nothing disappears silently.
+
 - Replies. Open a thread under any post, reply in up to 500 characters, delete your
   own. The reply count sits on the post, and a thread is only fetched once you open
   it.

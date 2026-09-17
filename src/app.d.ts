@@ -6,6 +6,7 @@ declare global {
 				email: string;
 				handle: string;
 				name: string;
+				isModerator: boolean;
 			} | null;
 		}
 		interface PageData {

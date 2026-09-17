@@ -123,7 +123,13 @@ export async function readSession(token: string | undefined) {
 	}
 
 	const [account] = await db
-		.select({ id: user.id, email: user.email, handle: user.handle, name: user.name })
+		.select({
+			id: user.id,
+			email: user.email,
+			handle: user.handle,
+			name: user.name,
+			isModerator: user.isModerator
+		})
 		.from(user)
 		.where(eq(user.id, row.userId));
 	return account ?? null;

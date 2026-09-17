@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp, integer, index } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, timestamp, integer, boolean, index } from 'drizzle-orm/pg-core';
 
 export const waitlist = pgTable('waitlist', {
 	id: serial('id').primaryKey(),
@@ -12,6 +12,8 @@ export const user = pgTable('user', {
 	email: text('email').notNull().unique(),
 	handle: text('handle').notNull().unique(),
 	name: text('name').notNull(),
+	// Moderators are recruited from the community, so this is set by hand, not earned.
+	isModerator: boolean('is_moderator').notNull().default(false),
 	createdAt: timestamp('created_at').notNull().defaultNow()
 });
 
@@ -48,6 +50,8 @@ export const post = pgTable(
 			.notNull()
 			.references(() => user.id, { onDelete: 'cascade' }),
 		body: text('body').notNull(),
+		removedAt: timestamp('removed_at'),
+		removedReason: text('removed_reason'),
 		createdAt: timestamp('created_at').notNull().defaultNow()
 	},
 	(t) => [index('post_created_idx').on(t.createdAt)]
@@ -64,7 +68,32 @@ export const comment = pgTable(
 			.notNull()
 			.references(() => user.id, { onDelete: 'cascade' }),
 		body: text('body').notNull(),
+		removedAt: timestamp('removed_at'),
+		removedReason: text('removed_reason'),
 		createdAt: timestamp('created_at').notNull().defaultNow()
 	},
 	(t) => [index('comment_post_idx').on(t.postId, t.createdAt)]
+);
+
+/**
+ * One row per report, kept after it is settled: the monthly count the policy promises
+ * has to come from somewhere, including the ones we got wrong.
+ */
+export const report = pgTable(
+	'report',
+	{
+		id: text('id').primaryKey(),
+		targetKind: text('target_kind').notNull(),
+		targetId: text('target_id').notNull(),
+		reporterId: text('reporter_id')
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		rule: text('rule').notNull(),
+		note: text('note'),
+		state: text('state').notNull().default('open'),
+		decidedBy: text('decided_by').references(() => user.id, { onDelete: 'set null' }),
+		decidedAt: timestamp('decided_at'),
+		createdAt: timestamp('created_at').notNull().defaultNow()
+	},
+	(t) => [index('report_state_idx').on(t.state, t.createdAt)]
 );

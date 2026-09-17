@@ -24,12 +24,15 @@ export const getFeed = query(async () => {
 	return db
 		.select({
 			id: post.id,
-			body: post.body,
+			// A removed post keeps its place and loses its words: the thread above and
+			// below it still makes sense, and nobody reads what a moderator took down.
+			body: sql<string | null>`case when ${post.removedAt} is null then ${post.body} end`,
+			removedReason: post.removedReason,
 			createdAt: post.createdAt,
 			authorId: post.authorId,
 			authorName: user.name,
 			authorHandle: user.handle,
-			replies: sql<number>`(select count(*)::int from ${comment} where ${comment.postId} = ${post.id})`
+			replies: sql<number>`(select count(*)::int from ${comment} where ${comment.postId} = ${post.id} and ${comment.removedAt} is null)`
 		})
 		.from(post)
 		.innerJoin(user, eq(user.id, post.authorId))
@@ -44,7 +47,8 @@ export const getComments = query(id, async (postId) => {
 	return db
 		.select({
 			id: comment.id,
-			body: comment.body,
+			body: sql<string | null>`case when ${comment.removedAt} is null then ${comment.body} end`,
+			removedReason: comment.removedReason,
 			createdAt: comment.createdAt,
 			authorId: comment.authorId,
 			authorName: user.name,
