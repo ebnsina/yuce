@@ -4,6 +4,12 @@ Every user-facing change, newest first. Dates are the day the change landed.
 
 ## Unreleased
 
+### Added
+
+- A feed. Write a post of up to 1,000 characters, read everyone else's newest first,
+  and delete your own. No ranking, no scoring — the order is the order things were
+  written in.
+
 ### Changed
 
 - Forms are remote functions now, validated by one schema that runs on the server and

@@ -39,3 +39,16 @@ export const loginCode = pgTable('login_code', {
 	attempts: integer('attempts').notNull().default(0),
 	sentAt: timestamp('sent_at').notNull().defaultNow()
 });
+
+export const post = pgTable(
+	'post',
+	{
+		id: text('id').primaryKey(),
+		authorId: text('author_id')
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		body: text('body').notNull(),
+		createdAt: timestamp('created_at').notNull().defaultNow()
+	},
+	(t) => [index('post_created_idx').on(t.createdAt)]
+);
