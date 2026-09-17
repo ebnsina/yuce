@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { cleanUp, signIn } from '../../lib/test-session';
+import { cleanUp, signIn } from '../../../lib/test-session';
 
 test.afterAll(cleanUp);
 
@@ -38,6 +38,8 @@ test('one person cannot delete another person’s post', async ({ page, browser 
 	const other = await browser.newPage();
 	await signIn(other);
 	await other.goto('/home');
+	// A new account follows nobody, so the post is only in the everyone feed.
+	await other.getByRole('button', { name: 'Everyone' }).click();
 	await expect(other.getByText(body)).toBeVisible();
 	// The post is readable, but its delete button belongs to the author alone.
 	await expect(other.getByRole('button', { name: 'Delete' })).toHaveCount(0);

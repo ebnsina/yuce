@@ -6,6 +6,14 @@ Every user-facing change, newest first. Dates are the day the change landed.
 
 ### Added
 
+- Profiles at `/@handle`: name, a line about you, what you have written, and how many
+  people you follow and are followed by.
+- Following, and a feed that respects it. Two lists — the people you follow, and
+  everyone — because a following-only feed cannot show you a first person to follow.
+- Settings, where your name and your line can be changed. Your handle cannot.
+- A three-column shell for the signed-in app: where you can go on the left, the feed
+  in the middle, people and the rules on the right.
+
 - You are told when something of yours is taken down, at the top of your own page,
   with the rule that was applied — not left to find it in the feed.
 - Appeals. One level, a human, 48 hours, and the moderator who removed it cannot be
@@ -31,6 +39,9 @@ Every user-facing change, newest first. Dates are the day the change landed.
   written in.
 
 ### Changed
+
+- The signed-in pages no longer carry the marketing header and footer, and the
+  content is centred rather than pinned to the left edge.
 
 - Only the part of a photo that crosses the line is blurred now, not the whole
   picture. A family at a walima is still a family at a walima.

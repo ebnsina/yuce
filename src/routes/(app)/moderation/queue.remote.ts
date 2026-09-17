@@ -89,7 +89,8 @@ export const decide = form(
 		await getQueue().refresh();
 		await getTally().refresh();
 		// The feed changes for everyone when something comes down, so it is refetched.
-		await getFeed().refresh();
+		await getFeed('following').refresh();
+		await getFeed('everyone').refresh();
 		if (row.targetKind === 'comment') {
 			const [parent] = await db
 				.select({ postId: comment.postId })
@@ -165,7 +166,8 @@ export const settleAppeal = form(
 
 		await getAppeals().refresh();
 		await getTally().refresh();
-		await getFeed().refresh();
+		await getFeed('following').refresh();
+		await getFeed('everyone').refresh();
 		return { settled: verdict };
 	}
 );

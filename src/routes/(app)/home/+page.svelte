@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { signOut } from '../login/auth.remote';
 	import {
 		addComment,
 		createPost,
@@ -19,6 +18,9 @@
 	let openPost = $state<string | null>(null);
 	// The report form opens under the one thing being reported, never as a modal.
 	let reporting = $state<string | null>(null);
+	// Following is the feed the product promises; everyone is how you find a first
+	// person to follow, which a following-only feed cannot do on its own.
+	let scope = $state<'following' | 'everyone'>('following');
 
 	const relative = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
 	const exact = new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeStyle: 'short' });
@@ -91,22 +93,14 @@
 
 {#snippet byline(name: string, handle: string, at: Date)}
 	<header class="flex flex-wrap items-baseline gap-2">
-		<span class="title">{name}</span>
-		<span class="mono">@{handle}</span>
+		<a class="title" href="/@{handle}">{name}</a>
+		<a class="mono" href="/@{handle}">@{handle}</a>
 		<time class="mono" datetime={at.toISOString()} title={exact.format(at)}>{ago(at)}</time>
 	</header>
 {/snippet}
 
-<section class="grid max-w-[620px] gap-6 py-10">
-	<header class="flex flex-wrap items-center justify-between gap-3">
-		<div class="grid gap-0.5">
-			<h1 class="title">Assalamu alaikum, {data.user.name}</h1>
-			<span class="mono">@{data.user.handle}</span>
-		</div>
-		<button class="btn btn-sm" onclick={() => signOut()} disabled={signOut.pending > 0}>
-			Sign out
-		</button>
-	</header>
+<section class="grid gap-6">
+	<h1 class="title">Home</h1>
 
 	<svelte:boundary>
 		{#snippet pending()}
@@ -172,6 +166,23 @@
 		</div>
 	</form>
 
+	<div class="flex flex-wrap gap-2" role="group" aria-label="Which feed">
+		<button
+			class={scope === 'following' ? 'chip chip-on' : 'chip'}
+			aria-pressed={scope === 'following'}
+			onclick={() => (scope = 'following')}
+		>
+			Following
+		</button>
+		<button
+			class={scope === 'everyone' ? 'chip chip-on' : 'chip'}
+			aria-pressed={scope === 'everyone'}
+			onclick={() => (scope = 'everyone')}
+		>
+			Everyone
+		</button>
+	</div>
+
 	<svelte:boundary>
 		{#snippet pending()}
 			<div class="grid gap-3" aria-label="Loading the feed">
@@ -185,7 +196,7 @@
 			</div>
 		{/snippet}
 
-		{#each await getFeed() as item (item.id)}
+		{#each await getFeed(scope) as item (item.id)}
 			{@const open = openPost === item.id}
 			<article class="grid gap-2 card">
 				{@render byline(item.authorName, item.authorHandle, item.createdAt)}
@@ -275,7 +286,15 @@
 			</article>
 		{:else}
 			<p class="sub">
-				Nothing here yet. Whatever you write first sets the tone for everyone who arrives after you.
+				{#if scope === 'following'}
+					Nothing from the people you follow. Try <button
+						class="link"
+						onclick={() => (scope = 'everyone')}>everyone</button
+					> and find somebody worth following.
+				{:else}
+					Nothing here yet. Whatever you write first sets the tone for everyone who arrives after
+					you.
+				{/if}
 			</p>
 		{/each}
 	</svelte:boundary>

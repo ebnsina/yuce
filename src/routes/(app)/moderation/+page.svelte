@@ -19,7 +19,7 @@
 	<meta name="robots" content="noindex" />
 </svelte:head>
 
-<section class="grid max-w-[720px] gap-6 py-10">
+<section class="grid gap-6">
 	<header class="grid justify-items-start gap-2">
 		<span class="label">Moderation</span>
 		<h1 class="title">The queue</h1>

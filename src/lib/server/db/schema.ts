@@ -1,4 +1,13 @@
-import { pgTable, serial, text, timestamp, integer, boolean, index } from 'drizzle-orm/pg-core';
+import {
+	pgTable,
+	serial,
+	text,
+	timestamp,
+	integer,
+	boolean,
+	index,
+	primaryKey
+} from 'drizzle-orm/pg-core';
 
 export const waitlist = pgTable('waitlist', {
 	id: serial('id').primaryKey(),
@@ -12,6 +21,7 @@ export const user = pgTable('user', {
 	email: text('email').notNull().unique(),
 	handle: text('handle').notNull().unique(),
 	name: text('name').notNull(),
+	bio: text('bio'),
 	// Moderators are recruited from the community, so this is set by hand, not earned.
 	isModerator: boolean('is_moderator').notNull().default(false),
 	createdAt: timestamp('created_at').notNull().defaultNow()
@@ -120,4 +130,22 @@ export const appeal = pgTable(
 		createdAt: timestamp('created_at').notNull().defaultNow()
 	},
 	(t) => [index('appeal_state_idx').on(t.state, t.createdAt)]
+);
+
+/** Following is one-directional and its own fact: no request, no approval, no pair. */
+export const follow = pgTable(
+	'follow',
+	{
+		followerId: text('follower_id')
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		followeeId: text('followee_id')
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		createdAt: timestamp('created_at').notNull().defaultNow()
+	},
+	(t) => [
+		primaryKey({ columns: [t.followerId, t.followeeId] }),
+		index('follow_followee_idx').on(t.followeeId)
+	]
 );

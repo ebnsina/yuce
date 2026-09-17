@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { cleanUp, signIn } from '../../lib/test-session';
+import { cleanUp, signIn } from '../../../lib/test-session';
 
 test.afterAll(cleanUp);
 
@@ -27,6 +27,8 @@ test('a reported post reaches the queue and can be removed', async ({ page, brow
 	// The reporter is an ordinary person, not the author and not a moderator.
 	await signIn(page);
 	await page.goto('/home');
+	// The reporter follows nobody, so the post is in the everyone feed.
+	await page.getByRole('button', { name: 'Everyone' }).click();
 	const card = page.locator('article').filter({ hasText: body });
 	await expect(card).toBeVisible();
 
@@ -47,6 +49,7 @@ test('a reported post reaches the queue and can be removed', async ({ page, brow
 	await expect(mod.locator('article').filter({ hasText: body })).toHaveCount(0);
 
 	await page.reload();
+	await page.getByRole('button', { name: 'Everyone' }).click();
 	await expect(page.getByText(body)).toHaveCount(0);
 	await expect(page.getByText('Removed by a moderator').first()).toBeVisible();
 
@@ -59,6 +62,8 @@ test('leaving a report alone keeps the post up', async ({ page, browser }) => {
 
 	await signIn(page);
 	await page.goto('/home');
+	// The reporter follows nobody, so the post is in the everyone feed.
+	await page.getByRole('button', { name: 'Everyone' }).click();
 	const card = page.locator('article').filter({ hasText: body });
 	await expect(card).toBeVisible();
 	await card.getByRole('button', { name: 'Report' }).click();
@@ -74,6 +79,7 @@ test('leaving a report alone keeps the post up', async ({ page, browser }) => {
 	await expect(mod.locator('article').filter({ hasText: body })).toHaveCount(0);
 
 	await page.reload();
+	await page.getByRole('button', { name: 'Everyone' }).click();
 	await expect(page.getByText(body)).toBeVisible();
 
 	await mod.close();
@@ -95,6 +101,8 @@ test('the author is told, can appeal, and a second moderator can put it back', a
 
 	await signIn(page);
 	await page.goto('/home');
+	// The reporter follows nobody, so the post is in the everyone feed.
+	await page.getByRole('button', { name: 'Everyone' }).click();
 	const card = page.locator('article').filter({ hasText: body });
 	await expect(card).toBeVisible();
 	await card.getByRole('button', { name: 'Report' }).click();
@@ -138,6 +146,7 @@ test('the author is told, can appeal, and a second moderator can put it back', a
 		.click();
 
 	await page.reload();
+	await page.getByRole('button', { name: 'Everyone' }).click();
 	await expect(page.getByText(body)).toBeVisible();
 
 	await author.close();

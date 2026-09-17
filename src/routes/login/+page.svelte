@@ -15,7 +15,9 @@
 	<meta name="robots" content="noindex" />
 </svelte:head>
 
-<section class="grid max-w-[460px] justify-items-start gap-6 pt-12 pb-20 md:pt-24">
+<section
+	class="mx-auto grid w-full max-w-[480px] justify-items-start gap-6 px-5 pt-12 pb-20 md:pt-24"
+>
 	<span class="chip chip-on">Invite-only beta</span>
 
 	{#if sent}
