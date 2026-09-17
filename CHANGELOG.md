@@ -4,6 +4,11 @@ Every user-facing change, newest first. Dates are the day the change landed.
 
 ## Unreleased
 
+### Changed
+
+- Forms are remote functions now, validated by one schema that runs on the server and
+  again in the browser. Every form still works with JavaScript off.
+
 ### Added
 
 - Sign in with a code sent to your email. No password to forget, and none for us to

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { signOut } from '../login/auth.remote';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -16,7 +17,5 @@
 		Your account exists: <span class="mono">@{data.user.handle}</span>. The feed is next — nothing
 		to read here yet, and nothing pretending there is.
 	</p>
-	<form method="POST" action="/logout">
-		<button class="btn" type="submit">Sign out</button>
-	</form>
+	<button class="btn" onclick={() => signOut()} disabled={signOut.pending > 0}>Sign out</button>
 </section>

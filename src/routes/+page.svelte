@@ -1,9 +1,5 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
-	import type { ActionData } from './$types';
-
-	let { form }: { form: ActionData } = $props();
-	let sending = $state(false);
+	import { joinWaitlist } from './waitlist.remote';
 
 	const title = 'Yuce — a social network with a halal line';
 	const description =
@@ -77,20 +73,8 @@
 		rather than the first crisis.
 	</p>
 
-	<form
-		id="invite"
-		class="mt-2 grid w-full max-w-[620px] gap-2.5"
-		method="POST"
-		action="?/join"
-		use:enhance={() => {
-			sending = true;
-			return async ({ update }) => {
-				await update();
-				sending = false;
-			};
-		}}
-	>
-		{#if form?.joined}
+	<form id="invite" class="mt-2 grid w-full max-w-[620px] gap-2.5" {...joinWaitlist}>
+		{#if joinWaitlist.result?.joined}
 			<p class="rounded-md border border-accent px-4 py-3.5 text-[15px] font-medium" role="status">
 				You are on the list. We open one community at a time, and you will hear from us before
 				anyone else in your city does.
@@ -101,32 +85,28 @@
 				<input
 					class="field w-auto flex-[1_1_240px]"
 					id="email"
-					name="email"
-					type="email"
+					{...joinWaitlist.fields.email.as('email')}
 					required
 					maxlength="254"
 					autocomplete="email"
 					placeholder="you@example.com"
-					value={form?.email ?? ''}
-					aria-invalid={form?.error ? 'true' : undefined}
 				/>
 				<label class="vh" for="city">City</label>
 				<input
 					class="field w-auto flex-[0_1_140px]"
 					id="city"
-					name="city"
-					type="text"
+					{...joinWaitlist.fields.city.as('text')}
 					maxlength="80"
 					autocomplete="address-level2"
 					placeholder="City"
 				/>
-				<button class="btn-solid" type="submit" disabled={sending}>
-					{sending ? 'Sending…' : 'Request invite'}
+				<button class="btn-solid" type="submit" disabled={joinWaitlist.pending > 0}>
+					{joinWaitlist.pending > 0 ? 'Sending…' : 'Request invite'}
 				</button>
 			</div>
-			{#if form?.error}
-				<p class="text-sm font-semibold text-danger" role="alert">{form.error}</p>
-			{/if}
+			{#each joinWaitlist.fields.allIssues() ?? [] as issue (issue.message)}
+				<p class="text-sm font-semibold text-danger" role="alert">{issue.message}</p>
+			{/each}
 			<p class="mono">Dhaka first. No marketing email, ever — only your invite.</p>
 		{/if}
 	</form>
