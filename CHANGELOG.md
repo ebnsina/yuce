@@ -12,6 +12,10 @@ Every user-facing change, newest first. Dates are the day the change landed.
 
 ### Changed
 
+- The landing page shows the product rather than describing it: a feed beside the
+  pitch, a blurred photo you can see the shape of, and a post removed for gheebah
+  with the reason attached. The number waiting is the real one.
+
 - Forms are remote functions now, validated by one schema that runs on the server and
   again in the browser. Every form still works with JavaScript off.
 
