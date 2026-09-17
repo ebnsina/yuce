@@ -1,42 +1,35 @@
-# sv
+# Yuce
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+A social network for Muslims. Ordinary posting, an unusual content policy.
 
-## Creating a project
+`plan.md` lives in `docs/`, which is not committed.
 
-If you're seeing this, you've probably already done this step. Congrats!
-
-```sh
-# create a new project
-npx sv create my-app
-```
-
-To recreate this project with the same configuration:
+## Running it
 
 ```sh
-# recreate this project
-pnpm dlx sv@0.17.0 create --template minimal --types ts --add prettier eslint vitest="usages:unit,component" playwright tailwindcss="plugins:typography,forms" drizzle="database:postgresql+postgresql:neon" ai-tools="ide:claude-code+delivery:plugin" experimental="versions:kit+features:async,remoteFunctions,explicitEnvironmentVariables,handleRenderingErrors" --install pnpm yuce
+pnpm install
+pnpm dev        # http://localhost:5188  — fixed, never reassigned
+pnpm preview    # http://localhost:5189  — what the tests run against
 ```
 
-## Developing
+Both ports are pinned with `strictPort`, so a clash fails loudly instead of moving
+the app to a port you are not looking at.
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+## Environment
+
+`.env` is pulled from Neon by `neon link`. `DATABASE_URL` is required and the app
+refuses to start without it. `RESEND_API_KEY` and `EMAIL_FROM` are optional in dev,
+where login codes are printed to the terminal instead of emailed, and required in
+production.
+
+## Checks
 
 ```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+pnpm check      # types
+pnpm lint       # formatting and lint
+pnpm test       # unit and end-to-end
+pnpm db:push    # apply the schema
 ```
 
-## Building
-
-To create a production version of your app:
-
-```sh
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+The end-to-end tests write to whatever `DATABASE_URL` points at. Point it at a Neon
+branch (`neon checkout test`), not production.

@@ -5,6 +5,10 @@ import adapter from '@sveltejs/adapter-auto';
 import { sveltekit } from '@sveltejs/kit/vite';
 
 export default defineConfig({
+	// Fixed, and never reassigned: 5173 belongs to another project, and a dev server
+	// that quietly moves is one you end up reading the wrong app in.
+	server: { port: 5188, strictPort: true },
+	preview: { port: 5189, strictPort: true },
 	plugins: [
 		tailwindcss(),
 		sveltekit({
